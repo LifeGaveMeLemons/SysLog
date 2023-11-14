@@ -5,7 +5,7 @@
   {
     static void Main(string[] args)
     {
-      Thread tr = new Thread
+      Thread tr = new Thread();
     }
   }
 }

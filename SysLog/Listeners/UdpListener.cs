@@ -38,7 +38,16 @@ namespace SysLog.Listeners
     {
       if (IsListening)
       {
-        throw new UDPAlreadyListeningException()
+        throw new UDPAlreadyListeningException();
+      }
+      IsSetLoListen = true;
+    }
+    public void Listen()
+    {
+      IsListening = true;
+      while(IsSetLoListen)
+      {
+        client
       }
     }
     public UdpListener(IPEndPoint ip,OnDataRecieved? callback)

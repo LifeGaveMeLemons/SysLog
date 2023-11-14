@@ -17,7 +17,7 @@ namespace SysLog.Listeners
     private OnDataRecieved dataCallback;
 
     private bool IsListening;
-    private bool IsSetLoListen;
+    private bool IsSetToListen;
 
     //copy IP address to avoid mutability outside class
     public IPEndPoint Ip
@@ -40,14 +40,20 @@ namespace SysLog.Listeners
       {
         throw new UDPAlreadyListeningException();
       }
-      IsSetLoListen = true;
+      IsSetToListen = true;
+    }
+    public void StopListening()
+    {
+      IsSetToListen
     }
     public void Listen()
     {
       IsListening = true;
-      while(IsSetLoListen)
+      while(IsSetToListen)
       {
-        client
+        byte[] bytes = client.Receive(ref ip);
+        string resultData = Encoding.UTF8.GetString(bytes);
+        dataCallback(resultData);
       }
     }
     public UdpListener(IPEndPoint ip,OnDataRecieved? callback)

@@ -1,13 +1,11 @@
 ﻿namespace SysLog
 {
+  delegate void OnDataRecieved(string data);
   internal class Program
   {
     static void Main(string[] args)
     {
-      Console.WriteLine("Hello, World!");
-
-      Console.WriteLine();
-      Console.WriteLine();
+      Thread tr = new Thread
     }
   }
 }

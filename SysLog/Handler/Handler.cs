@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SysLog.ListenerCollection
+namespace SysLog.Handler
 {
-  internal class ListenerCollection
+  internal class Handler
   {
+    public void Handle(string s)
+    {
+            Console.WriteLine(s);
+    }
   }
 }

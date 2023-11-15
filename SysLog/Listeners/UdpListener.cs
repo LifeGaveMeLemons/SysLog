@@ -10,44 +10,36 @@ using SysLog.Exceptions;
 namespace SysLog.Listeners
 {
 
-  internal class UdpListener
+  internal class UdpListener : Listener
   {
     private UdpClient client;
-    private IPEndPoint ip;
     private OnDataRecieved dataCallback;
 
     private bool IsListening;
     private bool IsSetToListen;
 
-    //copy IP address to avoid mutability outside class
-    public IPEndPoint Ip
-    {
-      get
-      {
-        return new IPEndPoint(ip.Address, ip.Port);
-      }
-      set
-      {
-        ip = new IPEndPoint(value.Address, value.Port);
-      }
-    }
     //assign empty lambd to avoid null checks
     public OnDataRecieved OnRecieve { set{ dataCallback = value == null?(string val)=> { }:value; } }
-
-    public void StartListeing()
+    override public string GetDescription()
+    {
+      return  "";
+    }
+    override public void StartListeing()
     {
       if (IsListening)
       {
         throw new UDPAlreadyListeningException();
       }
       IsSetToListen = true;
+      Listen();
     }
-    public void StopListening()
+    override public void StopListening()
     {
       IsSetToListen = false;
     }
-    public void Listen()
+    override public void Listen()
     {
+      IPEndPoint ip = new IPEndPoint(IPAddress.Any, 0);
       IsListening = true;
       while(IsSetToListen)
       {
@@ -55,10 +47,10 @@ namespace SysLog.Listeners
         string resultData = Encoding.UTF8.GetString(bytes);
         dataCallback(resultData);
       }
+      IsListening = false;
     }
-    public UdpListener(IPEndPoint ip,OnDataRecieved? callback)
+    public UdpListener(OnDataRecieved? callback)
     {
-      this.ip = ip;
       this.OnRecieve = callback;
     }
   }

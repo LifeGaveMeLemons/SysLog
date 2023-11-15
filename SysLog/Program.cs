@@ -1,7 +1,7 @@
 ﻿using SysLog.Listeners;
 using SysLog.ListenerCol;
 using SysLog.Exceptions;
-using SysLog.Handler;
+using SysLog.Handlers;
 using System.Net;
 
 namespace SysLog
@@ -11,10 +11,10 @@ namespace SysLog
   {
     static void Main(string[] args)
     {
-      Handler.Handler h = new Handler.Handler();
-      OnDataRecieved handle = h.Handle;
+      Handler h = new Handler();
       ListenerCollection collection = new ListenerCollection();
-      collection.Add(new UdpListener(handle));
+      collection.Add(new UdpListener(h.Enqueue));
+      Console.ReadLine();
       
     }
   }

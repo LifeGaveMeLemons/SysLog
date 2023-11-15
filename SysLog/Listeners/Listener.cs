@@ -10,8 +10,6 @@ namespace SysLog.Listeners
   abstract class Listener
   {
     abstract public string GetDescription();
-    abstract public void StartListeing();
-    abstract public void StopListening();
-    abstract public void Listen();
+    abstract public void CheckForMessages();
   }
 }

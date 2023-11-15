@@ -12,11 +12,10 @@ namespace SysLog.Listeners
 
   internal class UdpListener : Listener
   {
+    private static string descriiption = "A udp listener";
     private UdpClient client;
     private OnDataRecieved dataCallback;
 
-    private bool IsListening;
-    private bool IsSetToListen;
 
     //assign empty lambd to avoid null checks
     public OnDataRecieved OnRecieve { set{ dataCallback = value == null?(string val)=> { }:value; } }
@@ -24,34 +23,24 @@ namespace SysLog.Listeners
     {
       return  "";
     }
-    override public void StartListeing()
+
+
+    override public void CheckForMessages()
     {
-      if (IsListening)
+      IPEndPoint ip = new IPEndPoint(IPAddress.Any, 514);
+      byte[]? bytes = client.Receive(ref ip);
+      string resultData = Encoding.UTF8.GetString(bytes);
+      if (resultData == "")
       {
-        throw new UDPAlreadyListeningException();
+        return;
       }
-      IsSetToListen = true;
-      Listen();
-    }
-    override public void StopListening()
-    {
-      IsSetToListen = false;
-    }
-    override public void Listen()
-    {
-      IPEndPoint ip = new IPEndPoint(IPAddress.Any, 0);
-      IsListening = true;
-      while(IsSetToListen)
-      {
-        byte[] bytes = client.Receive(ref ip);
-        string resultData = Encoding.UTF8.GetString(bytes);
-        dataCallback(resultData);
-      }
-      IsListening = false;
+      dataCallback(resultData);
+
     }
     public UdpListener(OnDataRecieved? callback)
     {
       this.OnRecieve = callback;
+      client = new UdpClient(514);
     }
   }
 }

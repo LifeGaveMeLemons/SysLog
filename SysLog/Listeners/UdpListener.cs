@@ -44,7 +44,7 @@ namespace SysLog.Listeners
     }
     public void StopListening()
     {
-      IsSetToListen
+      IsSetToListen = false;
     }
     public void Listen()
     {

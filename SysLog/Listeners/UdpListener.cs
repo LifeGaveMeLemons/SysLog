@@ -37,10 +37,10 @@ namespace SysLog.Listeners
       dataCallback(resultData);
 
     }
-    public UdpListener(OnDataRecieved? callback)
+    public UdpListener(OnDataRecieved? callback,ushort port = 514)
     {
       this.OnRecieve = callback;
-      client = new UdpClient(514);
+      client = new UdpClient(port);
     }
   }
 }

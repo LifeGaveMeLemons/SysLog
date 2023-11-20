@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SysLog.Listeners
 {
   internal class TcpClientListener : Listener, IDisposable
   {
     private static string description = "Tcp Handler";
-
 
     private OnDataRecieved? callback;
     private RemoveConnection rm;
@@ -27,36 +22,38 @@ namespace SysLog.Listeners
       client.Dispose();
       GC.SuppressFinalize(this);
     }
-
+    private async Task<bool> CheckForConnection()
+    {
+      return (client.Client.Poll(1000, SelectMode.SelectRead) && client.Client.Available == 0);
+    }
 
     override public string GetDescription()
     {
       return description;
     }
-    override public void CheckForMessages()
+    override async public void CheckForMessages()
     {
-      if (client.Connected)
+      bool v = await CheckForConnection();
+      string s ="";
+      if (stream.DataAvailable)
       {
-
-        if (!stream.DataAvailable)
-        {
-          return;
-        }
         byte[]? data = new byte[400];
         stream.Read(data, 0, data.Length);
-        string s = Encoding.UTF8.GetString(data);
-        if (s != "")
-        {
-          callback(s);
-        }
-        else
-        {
-          rm(this);
-        }
+        s = Encoding.UTF8.GetString(data);
+      }
+
+     Console.WriteLine(v);
+      if (v)
+      {
+        rm(this);
+      }
+      if (s != "")
+      {
+        callback(s);
       }
       else
       {
-        rm(this);
+
       }
     }
 

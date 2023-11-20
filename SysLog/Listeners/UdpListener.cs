@@ -27,15 +27,21 @@ namespace SysLog.Listeners
 
     override public void CheckForMessages()
     {
-      IPEndPoint ip = new IPEndPoint(IPAddress.Any, 514);
-      byte[]? bytes = client.Receive(ref ip);
-      string resultData = Encoding.UTF8.GetString(bytes);
-      if (resultData == "")
+      try
       {
-        return;
+        if (client.Available > 0)
+        {
+          IPEndPoint ip = new IPEndPoint(IPAddress.Any, 514);
+          byte[]? bytes = client.Receive(ref ip);
+          string resultData = Encoding.UTF8.GetString(bytes);
+          if (resultData == "")
+          {
+            return;
+          }
+          dataCallback(resultData);
+        }
       }
-      dataCallback(resultData);
-
+      catch (Exception ex) { Console.WriteLine(ex); }
     }
     public UdpListener(OnDataRecieved? callback,ushort port = 514)
     {

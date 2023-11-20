@@ -27,22 +27,25 @@ namespace SysLog.ListenerCol
     private object keyConInitializer = new object();
     public ListenerCollection(OnDataRecieved? callback)
     {
-          li = new List<Listener>();
+      li = new List<Listener>();
       listenerThread = new Thread(CheckForMessages);
       listenerThread.Start();
       listenerList = new List<NewInboundConnectionListener>();  
       inboundConnectionListenerThread = new Thread(CheckForInboundConnections);
       inboundConnectionListenerThread.Start();
-      this.callback
+      this.callback = callback;
     }
     private void CheckForInboundConnections()
     {
       while (isListeningTCP)
       {
+        NewInboundConnectionListener[] listeners;
         lock (keyConInitializer)
         {
+          listeners = listenerList.ToArray();
+        }
           TcpClient tcpClient = null;
-          foreach (var listener in listenerList)
+          foreach (var listener in listeners)
           {
             tcpClient = listener.CheckForConnections();
             if (tcpClient != null)
@@ -50,7 +53,7 @@ namespace SysLog.ListenerCol
               Add(new TcpClientListener(tcpClient, callback, RemoveElement));
             }
           }
-        }
+        
       }
     }
     public void RemoveElement(TcpClientListener l)
@@ -70,18 +73,28 @@ namespace SysLog.ListenerCol
     private void CheckForMessages()
     {
       while (true)
-      { 
-        lock (key)
+      {
+        try
         {
-          foreach (Listener l in li)
+          Listener[] l;
+          if (li.Count == 0) continue;
+          lock (key)
           {
-            l.CheckForMessages();
+            l = li.ToArray();
+          }
+          foreach (Listener element in l)
+          {
+            element.CheckForMessages();
           }
         }
-      }
-    
+        catch (Exception e) { Console.WriteLine(  e); }
+                
 
-    }
+      }
+
+
+        }
+    static int v = 0;
     public void Add(Listener listener)
     {
       lock (key)

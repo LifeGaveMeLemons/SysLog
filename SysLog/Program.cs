@@ -15,9 +15,9 @@ namespace SysLog
     {
       Handler h = new Handler();
       ListenerCollection collection = new ListenerCollection(h.Enqueue);
-      collection.Add(new UdpListener(h.Enqueue,514));
-      collection.AddListener(514);
-      Console.ReadLine();
+      collection.Add(new UdpListener(h.Enqueue, 514));
+      collection.Add(new UdpListener(h.Enqueue, 515));
+      collection.AddListener(516);
       
     }
   }

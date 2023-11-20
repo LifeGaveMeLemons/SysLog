@@ -8,8 +8,10 @@ using System.Threading;
 
 namespace SysLog.Handlers
 {
+  
   internal class Handler
   {
+    
     ConcurrentQueue<string> strings;
 
     Thread HandlerThread;
@@ -34,16 +36,24 @@ namespace SysLog.Handlers
 
     public void Process()
     {
+
       while (IsRunning) 
       {
-        if (strings.TryDequeue(out string v))
+        try
         {
-          Console.WriteLine(v);
+          if (strings.TryDequeue(out string v))
+          {
+            strings.Append(v);
+            Console.WriteLine(v);
+            
+            
+          }
+          else
+          {
+            Thread.Sleep(500);
+          }
         }
-        else
-        {
-          Thread.Sleep(500);
-        }
+        catch (Exception e ){ Console.WriteLine(e); }
       }
     }
   }

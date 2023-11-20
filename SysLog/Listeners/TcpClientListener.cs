@@ -22,7 +22,7 @@ namespace SysLog.Listeners
       client.Dispose();
       GC.SuppressFinalize(this);
     }
-    private async Task<bool> CheckForConnection()
+    private bool CheckForConnection()
     {
       return (client.Client.Poll(1000, SelectMode.SelectRead) && client.Client.Available == 0);
     }
@@ -31,9 +31,9 @@ namespace SysLog.Listeners
     {
       return description;
     }
-    override async public void CheckForMessages()
+    override  public void CheckForMessages()
     {
-      bool v = await CheckForConnection();
+
       string s ="";
       if (stream.DataAvailable)
       {
@@ -41,11 +41,15 @@ namespace SysLog.Listeners
         stream.Read(data, 0, data.Length);
         s = Encoding.UTF8.GetString(data);
       }
-
-     Console.WriteLine(v);
-      if (v)
+      else
       {
-        rm(this);
+        bool v = CheckForConnection();
+        Console.WriteLine(v);
+        if (v)
+        {
+          rm(this);
+          return;
+        }
       }
       if (s != "")
       {

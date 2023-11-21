@@ -10,7 +10,7 @@ namespace SysLog.Listeners
 {
   internal class InboundConnectionListener
   {
-    TcpListener listener;
+     listener;
 
 
     public InboundConnectionListener(int port)

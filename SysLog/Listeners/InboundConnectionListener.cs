@@ -8,12 +8,12 @@ using System.Net;
 
 namespace SysLog.Listeners
 {
-  internal class NewInboundConnectionListener
+  internal class InboundConnectionListener
   {
     TcpListener listener;
 
 
-    public NewInboundConnectionListener(int port)
+    public InboundConnectionListener(int port)
     {
       listener = new TcpListener(new IPEndPoint(IPAddress.Any, port));
       listener.Start();

@@ -12,34 +12,35 @@ namespace SysLog.ListenerCol
   {
 
 
-    List<Listener> li;
-    Thread listenerThread;
+    List<Listener> tcpClients;
+    Thread ConnectionHandlerThread;
 
-    Thread inboundConnectionListenerThread;
-    List<NewInboundConnectionListener> listenerList;
+    Thread newConnections;
+    List<InboundConnectionListener> listenerList;
     bool isListeningTCP = true;
 
-    private OnDataRecieved? callback;
+    private OnDataRecieved? dataRecievedCallback;
 
-    public OnDataRecieved OnRecieve { set { callback = value == null ? (string val) => { } : value; } }
+    //will not update current connecctions
+    public OnDataRecieved OnRecieve { set { dataRecievedCallback = value == null ? (string val) => { } : value; } }
 
     private object key = new object();
     private object keyConInitializer = new object();
     public ListenerCollection(OnDataRecieved? callback)
     {
-      li = new List<Listener>();
-      listenerThread = new Thread(CheckForMessages);
-      listenerThread.Start();
-      listenerList = new List<NewInboundConnectionListener>();  
-      inboundConnectionListenerThread = new Thread(CheckForInboundConnections);
-      inboundConnectionListenerThread.Start();
-      this.callback = callback;
+      tcpClients = new List<Listener>();
+      ConnectionHandlerThread = new Thread(CheckForMessages);
+      ConnectionHandlerThread.Start();
+      listenerList = new List<InboundConnectionListener>();  
+      newConnections = new Thread(CheckForInboundConnections);
+      newConnections.Start();
+      this.dataRecievedCallback = callback;
     }
     private void CheckForInboundConnections()
     {
       while (isListeningTCP)
       {
-        NewInboundConnectionListener[] listeners;
+        InboundConnectionListener[] listeners;
         lock (keyConInitializer)
         {
           listeners = listenerList.ToArray();
@@ -50,7 +51,7 @@ namespace SysLog.ListenerCol
             tcpClient = listener.CheckForConnections();
             if (tcpClient != null)
             {
-              Add(new TcpClientListener(tcpClient, callback, RemoveElement));
+              Add(new TcpClientListener(tcpClient, dataRecievedCallback, RemoveElement));
             }
           }
         
@@ -60,14 +61,14 @@ namespace SysLog.ListenerCol
     {
       lock(key) 
       {
-        li.Remove(l);
+        tcpClients.Remove(l);
       }
     }
     public void AddListener(int port)
     {
       lock(keyConInitializer)
       {
-        listenerList.Add(new NewInboundConnectionListener(port));
+        listenerList.Add(new InboundConnectionListener(port));
       }
     }
     private void CheckForMessages()
@@ -77,10 +78,10 @@ namespace SysLog.ListenerCol
         try
         {
           Listener[] l;
-          if (li.Count == 0) continue;
+          if (tcpClients.Count == 0) continue;
           lock (key)
           {
-            l = li.ToArray();
+            l = tcpClients.ToArray();
           }
           foreach (Listener element in l)
           {
@@ -99,7 +100,7 @@ namespace SysLog.ListenerCol
     {
       lock (key)
       {
-        li.Add(listener);
+        tcpClients.Add(listener);
       }
     }
   }

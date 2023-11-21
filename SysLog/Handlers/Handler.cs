@@ -16,9 +16,10 @@ namespace SysLog.Handlers
 
     Thread HandlerThread;
     bool IsRunning = true;
-
+    ConsoleColor[] colors;
     public Handler()
     {
+      colors = new ConsoleColor[] { ConsoleColor.DarkBlue, ConsoleColor.Black, ConsoleColor.Yellow, ConsoleColor.Red, ConsoleColor.DarkBlue, ConsoleColor.Black, ConsoleColor.Yellow, ConsoleColor.Red }; 
       strings = new ConcurrentQueue<string>();
       HandlerThread = new Thread(Process);
       HandlerThread.Start();
@@ -43,7 +44,8 @@ namespace SysLog.Handlers
         {
           if (strings.TryDequeue(out string v))
           {
-            strings.Append(v);
+            int number = Convert.ToInt32(v.Substring(0, v.IndexOf('>') - 1));
+            Console.ForegroundColor = colors[number];
             Console.WriteLine(v);
             
             

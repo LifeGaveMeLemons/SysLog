@@ -26,16 +26,6 @@ namespace SysLog.ListenerCol
 
     private object key = new object();
     private object keyConInitializer = new object();
-    public ListenerCollection(OnDataRecieved? callback)
-    {
-      tcpClients = new List<Listener>();
-      ConnectionHandlerThread = new Thread(CheckForMessages);
-      ConnectionHandlerThread.Start();
-      listenerList = new List<InboundConnectionListener>();  
-      newConnections = new Thread(CheckForInboundConnections);
-      newConnections.Start();
-      this.dataRecievedCallback = callback;
-    }
     private void CheckForInboundConnections()
     {
       while (isListeningTCP)
@@ -51,20 +41,21 @@ namespace SysLog.ListenerCol
             tcpClient = listener.CheckForConnections();
             if (tcpClient != null)
             {
-              Add(new TcpClientListener(tcpClient, dataRecievedCallback, RemoveElement));
+            Add(new Listeners.TcpSessionListener(tcpClient, dataRecievedCallback, RemoveClient));
             }
           }
         
       }
     }
-    public void RemoveElement(TcpClientListener l)
+    public void RemoveClient(Listener l)
     {
       lock(key) 
       {
+        l.Dispose();
         tcpClients.Remove(l);
       }
     }
-    public void AddListener(int port)
+    public void AddIncomingConnectionListener(int port)
     {
       lock(keyConInitializer)
       {
@@ -95,7 +86,6 @@ namespace SysLog.ListenerCol
 
 
         }
-    static int v = 0;
     public void Add(Listener listener)
     {
       lock (key)
@@ -103,5 +93,23 @@ namespace SysLog.ListenerCol
         tcpClients.Add(listener);
       }
     }
+
+    public ListenerCollection(OnDataRecieved? callback)
+    {
+      tcpClients = new List<Listener>();
+      listenerList = new List<InboundConnectionListener>();
+
+
+      ConnectionHandlerThread = new Thread(CheckForMessages);
+      ConnectionHandlerThread.Start();
+
+
+      newConnections = new Thread(CheckForInboundConnections);
+      newConnections.Start();
+
+
+      this.dataRecievedCallback = callback;
+    }
+
   }
 }

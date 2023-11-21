@@ -16,7 +16,13 @@ namespace SysLog.Listeners
     private UdpClient client;
     private OnDataRecieved dataCallback;
 
-
+    public override void Dispose()
+    {
+      dataCallback = null;
+      client.Close();
+      client.Dispose();
+      GC.SuppressFinalize(this);
+    }
     //assign empty lambd to avoid null checks
     public OnDataRecieved OnRecieve { set{ dataCallback = value == null?(string val)=> { }:value; } }
     override public string GetDescription()

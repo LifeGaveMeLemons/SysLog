@@ -10,11 +10,12 @@ namespace SysLog.Listeners
 {
   internal class InboundConnectionListener
   {
-     listener;
 
+    TcpListener listener;
 
     public InboundConnectionListener(int port)
     {
+      
       listener = new TcpListener(new IPEndPoint(IPAddress.Any, port));
       listener.Start();
     }

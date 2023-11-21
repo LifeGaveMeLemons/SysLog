@@ -3,7 +3,7 @@ using System.Text;
 
 namespace SysLog.Listeners
 {
-  internal class TcpClientListener : Listener, IDisposable
+  internal class TcpSessionListener : Listener
   {
     private static string description = "Tcp Handler";
 
@@ -14,7 +14,7 @@ namespace SysLog.Listeners
     TcpClient client;
 
 
-    public void Dispose()
+    public override void Dispose()
     {
       stream.Close();
       stream.Dispose();
@@ -61,7 +61,7 @@ namespace SysLog.Listeners
       }
     }
 
-    public TcpClientListener(TcpClient client, OnDataRecieved? callback, RemoveConnection rm)
+    public TcpSessionListener(TcpClient client, OnDataRecieved? callback, RemoveConnection rm)
     {
       this.client = client;
       this.callback = callback;

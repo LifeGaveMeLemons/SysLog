@@ -6,28 +6,33 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using SysLog.Exceptions;
+using SysLog.UI.Data;
 
 namespace SysLog.Listeners
 {
 
   internal class UdpListener : Listener
   {
-    private static string descriiption = "A udp listener";
+    private static string descriiption = "UDP Listener";
     private UdpClient client;
-    private OnDataRecieved dataCallback;
-
+    private Action<SyslogIpModel> dataCallback;
+    public ushort Port{ get; private set; }
     public override void Dispose()
     {
       dataCallback = null;
-      client.Close();
-      client.Dispose();
+      if (client != null)
+      {
+        client.Close();
+        client.Dispose();
+      }
+
       GC.SuppressFinalize(this);
     }
-    //assign empty lambd to avoid null checks
-    public OnDataRecieved OnRecieve { set{ dataCallback = value == null?(string val)=> { }:value; } }
+    //assign empty lambda to avoid null checks
+    public Action<SyslogIpModel> OnRecieve { set{ dataCallback = value == null?(SyslogIpModel val)=> { }:value; } }
     override public string GetDescription()
     {
-      return  "";
+      return  $"{descriiption} listeing in port {Port}";
     }
 
 
@@ -37,22 +42,28 @@ namespace SysLog.Listeners
       {
         if (client.Available > 0)
         {
-          IPEndPoint ip = new IPEndPoint(IPAddress.Any, 514);
+          IPEndPoint ip = new IPEndPoint(IPAddress.Any, Port);
           byte[]? bytes = client.Receive(ref ip);
           string resultData = Encoding.UTF8.GetString(bytes);
           if (resultData == "")
           {
             return;
           }
-          dataCallback(resultData);
+          dataCallback(new SyslogIpModel(ip,resultData, 2));
         }
       }
       catch (Exception ex) { Console.WriteLine(ex); }
     }
-    public UdpListener(OnDataRecieved? callback,ushort port = 514)
+    public UdpListener(Action<SyslogIpModel> callback,ushort port = 514)
     {
+      this.Port = port;
       this.OnRecieve = callback;
       client = new UdpClient(port);
+    }
+  ~UdpListener()
+    {
+
+      Dispose();
     }
   }
 }

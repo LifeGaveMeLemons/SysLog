@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SysLog.UI.Modules
+namespace SysLog.UI.Data
 {
-  abstract class Menuelement
+  internal class SysLogMessageModel
   {
 
   }

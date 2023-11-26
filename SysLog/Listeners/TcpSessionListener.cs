@@ -1,4 +1,6 @@
-﻿using System.Net.Sockets;
+﻿using SysLog.UI.Data;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace SysLog.Listeners
@@ -7,12 +9,11 @@ namespace SysLog.Listeners
   {
     private static string description = "Tcp Handler";
 
-    private OnDataRecieved? callback;
-    private RemoveConnection rm;
-
+    private Action<SyslogIpModel> callback;
+    private Action<TcpSessionListener> rm;
+    IPEndPoint remoteEndPoint;
     NetworkStream stream;
     TcpClient client;
-
 
     public override void Dispose()
     {
@@ -44,7 +45,6 @@ namespace SysLog.Listeners
       else
       {
         bool v = CheckForConnection();
-        Console.WriteLine(v);
         if (v)
         {
           rm(this);
@@ -53,7 +53,7 @@ namespace SysLog.Listeners
       }
       if (s != "")
       {
-        callback(s);
+        callback(new SyslogIpModel(remoteEndPoint,s,0));
       }
       else
       {
@@ -61,12 +61,17 @@ namespace SysLog.Listeners
       }
     }
 
-    public TcpSessionListener(TcpClient client, OnDataRecieved? callback, RemoveConnection rm)
+    public TcpSessionListener(TcpClient client, Action<SyslogIpModel> callback, Action<TcpSessionListener> rm)
     {
       this.client = client;
       this.callback = callback;
       stream = client.GetStream();
       this.rm = rm;
+      remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
+      if (remoteEndPoint == null) 
+      {
+        rm(this);
+      }
     }
   }
 }

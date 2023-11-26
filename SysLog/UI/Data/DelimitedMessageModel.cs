@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SysLog.UI.Modules
+namespace SysLog.UI.Data
 {
-  internal class Listening
+  internal class DelimitedMessageModel
   {
-    List<string> Values;
-    List<string> FilterView;
   }
 }

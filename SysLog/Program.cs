@@ -5,22 +5,21 @@ using SysLog.Handlers;
 using System.Net;
 using System.Net.Sockets;
 using SysLog.UI;
+using SysLog.UI.UiElements;
 
 namespace SysLog
 {
-  delegate void OnDataRecieved(string data);
-  delegate void RemoveConnection(Listeners.TcpSessionListener l);
   internal class Program
   {
     static void Main(string[] args)
     {
       //Handler h = new Handler();
-      //ListenerCollection collection = new ListenerCollection(h.Enqueue);
-      //collection.Add(new UdpListener(h.Enqueue, 514));
       //collection.Add(new UdpListener(h.Enqueue, 515));
       //collection.AddIncomingConnectionListener(516);
-
-      UserInterface ui = new UserInterface();
-    }
+      Console.BackgroundColor = ConsoleColor.Black;
+      MainMenu m = MainMenu.Create();
+      m.Load();
+            Console.WriteLine(  "bjeddv3ugvruty3erytgf");
+        }
   }
 }

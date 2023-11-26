@@ -8,14 +8,15 @@ using System.Net;
 
 namespace SysLog.Listeners
 {
-  internal class InboundConnectionListener
+  internal class InboundConnectionListener : IDisposable
   {
+    private static string description = "Tcp Listener";
 
     TcpListener listener;
-
+    public ushort Port { get; private set; }
     public InboundConnectionListener(int port)
     {
-      
+      this.Port = (ushort)port;
       listener = new TcpListener(new IPEndPoint(IPAddress.Any, port));
       listener.Start();
     }
@@ -27,6 +28,15 @@ namespace SysLog.Listeners
                 return listener.AcceptTcpClient();
       }
       else return null;
+    }
+    public string GetDesription()
+    {
+      return $"{description} listening on port {Port}";
+    }
+    public void Dispose()
+    {
+      listener.Stop();
+      listener = null;
     }
 
 

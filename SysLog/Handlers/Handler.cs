@@ -21,7 +21,7 @@ namespace SysLog.Handlers
     {
 
       colors = new ConsoleColor[] { ConsoleColor.DarkBlue, ConsoleColor.Black, ConsoleColor.Yellow, ConsoleColor.Red, ConsoleColor.DarkBlue, ConsoleColor.Black, ConsoleColor.Yellow, ConsoleColor.Red }; 
-      strings = new ConcurrentQueue<string>();
+      valuesToProcess = new ConcurrentQueue<string>();
       HandlerThread = new Thread(Process);
       HandlerThread.Start();
       Console.BackgroundColor = ConsoleColor.White;

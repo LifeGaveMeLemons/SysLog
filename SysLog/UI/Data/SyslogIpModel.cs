@@ -7,20 +7,24 @@ using System.Threading.Tasks;
 
 namespace SysLog.UI.Data
 {
+  /// <summary>
+  ///   This model is meant to hold data ona  raw string that has been recieved andf th IP address that it was recieved from.
+  /// </summary>
   internal class SyslogIpModel
   {
     public IPEndPoint ip;
     public string msg;
-    public byte severity;
+
+    /// <summary>
+    ///   Returns an instance of SyslogIpModel with al fields filled with the corellating values.
+    /// </summary>
+    /// <param name="ip"></param>
+    /// <param name="msg"></param>
+    /// <param name="severity"></param>
     public SyslogIpModel(IPEndPoint ip, string msg, byte severity)
     {
       this.ip = ip;
       this.msg = msg;
-      this.severity = severity;
-    }
-    public static explicit operator string (SyslogIpModel obj) 
-    {
-      return $"{obj.msg}|| from {obj.ip.ToString()}|| severity:{obj.severity} ";
     }
   }
 }

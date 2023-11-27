@@ -7,11 +7,18 @@ using System.Threading.Tasks;
 
 namespace SysLog.UI
 {
+  /// <summary>
+  ///   Serves as a base for most of the UI elements in this program, implementing fundamental navigtion methods that the UI utilizes.
+  /// </summary>
   abstract class NavClass
   {
 
     internal List<StringFunctionModel> subElements;
     internal bool isRunning = true;
+
+    /// <summary>
+    ///   Serves as the enry opint to any UI element.
+    /// </summary>
     public  virtual void Load()
     {
       isRunning = true;
@@ -22,18 +29,32 @@ namespace SysLog.UI
       }
       return;
     }
+
+    /// <summary>
+    ///   Removes colour settings at specified index without Re-rendering the entire CLI.
+    /// </summary>
+    /// <param name="pos"></param>
     internal virtual void RemoveColor(int pos)
     {
       Console.SetCursorPosition(0, pos);
       Console.ForegroundColor = ConsoleColor.White;
       Console.WriteLine(subElements[pos]);
     }
+
+    /// <summary>
+    ///   Sets colour of line to dark green.
+    /// </summary>
+    /// <param name="pos"></param>
     internal virtual void SetColor(int pos)
     {
       Console.SetCursorPosition(0, pos);
       Console.ForegroundColor = ConsoleColor.DarkGreen;
       Console.WriteLine(subElements[pos]);
     }
+
+    /// <summary>
+    ///   begins the navigation around the specific UI element
+    /// </summary>
     internal virtual void StartNavigation()
     {
 
@@ -77,7 +98,7 @@ namespace SysLog.UI
             SetColor(currentValue);
             break;
           case ConsoleKey.Enter:
-            subElements[currentValue].method.Invoke();
+            subElements[currentValue].Method.Invoke();
             return;
           default:
             continue;
@@ -85,6 +106,9 @@ namespace SysLog.UI
       }
     }
 
+    /// <summary>
+    ///   Serves as a method that terminates subsequent loops and returns to the invoking UI element.
+    /// </summary>
     internal virtual void Exit()
     {
       isRunning = false;

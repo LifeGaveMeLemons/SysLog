@@ -88,7 +88,7 @@ namespace SysLog.UI
             SetColor(currentValue);
             break;
           case ConsoleKey.Enter:
-            subElements[currentValue].method.Invoke();
+            subElements[currentValue].Method.Invoke();
             return;
           default:
             continue;

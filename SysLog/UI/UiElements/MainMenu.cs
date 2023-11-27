@@ -32,7 +32,6 @@ namespace SysLog.UI.UiElements
     {
       handler = Handler.Create();
       col = ListenerCollection.Create(handler.Enqueue);
-      col.Add(new UdpListener(handler.Enqueue, 514));
       subElements = new List<StringFunctionModel> {
         new StringFunctionModel("Listeners",SysLog.UI.ListenerManagement.Create().Load),
         new StringFunctionModel("View Messages", ListeningView.Create().Load),

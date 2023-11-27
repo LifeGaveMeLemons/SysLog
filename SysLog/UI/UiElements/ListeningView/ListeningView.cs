@@ -11,9 +11,9 @@ namespace SysLog.UI.UiElements
   internal class ListeningView : NavClass
   {
     private static ListeningView instance;
-    List<SyslogIpModel> values;
+    List<DelimitedMessageModel> values;
 
-    ConcurrentQueue<SyslogIpModel> queue;
+    ConcurrentQueue<DelimitedMessageModel> queue;
     bool isUpdated = false;
     int MaxValue;
     object maxValuekey = new object();
@@ -34,19 +34,22 @@ namespace SysLog.UI.UiElements
     public override void Load()
     {
       MaxValue = -1;
-      values = new List<SyslogIpModel>();
-      queue = new ConcurrentQueue<SyslogIpModel>();
+      values = new List<DelimitedMessageModel>();
+      queue = new ConcurrentQueue<DelimitedMessageModel>();
       Handlers.Handler.Create().SetCallback(RecieveValue);
       base.Load();
     }
-    private void RecieveValue(SyslogIpModel v)
+    private void RecieveValue(DelimitedMessageModel v)
     {
-      isUpdated = true;
-      queue.Enqueue(v);
+      if (isRunning)
+      {
+        isUpdated = true;
+        queue.Enqueue(v);
+      }
     }
-    private IEnumerable<SyslogIpModel> CheckForNewValues()
+    private IEnumerable<DelimitedMessageModel> CheckForNewValues()
     {
-      SyslogIpModel v;
+      DelimitedMessageModel v;
       if (queue.TryDequeue(out v))
       {
         values.Add(v);
@@ -61,9 +64,9 @@ namespace SysLog.UI.UiElements
       while (isRunning)
       {
 
-        foreach (SyslogIpModel item in CheckForNewValues())
+        foreach (DelimitedMessageModel item in CheckForNewValues())
         {
-          Console.ForegroundColor = Handlers.Handler.colors[item.severity];
+          Console.ForegroundColor = Handlers.Handler.colors[item.SeverityCalc];
           
           lock(maxValuekey)
           {
@@ -82,7 +85,7 @@ namespace SysLog.UI.UiElements
               {
                 break;
               }
-              RemoveColor(currentValue, values[currentValue].severity);
+              RemoveColor(currentValue, values[currentValue].SeverityCalc);
               if (currentValue == MaxValue)
               {
                 currentValue = 0;
@@ -98,7 +101,7 @@ namespace SysLog.UI.UiElements
               {
                 break;
               }
-              RemoveColor(currentValue, values[currentValue].severity);
+              RemoveColor(currentValue, values[currentValue].SeverityCalc);
               if (currentValue == 0)
               {
                 currentValue = MaxValue;
@@ -136,7 +139,8 @@ namespace SysLog.UI.UiElements
     }
     private void SaveValues()
     {
-      File.WriteAllLines("",values.Select((v) =>(string) v ).ToArray());
+      isRunning = false;
+      File.WriteAllLines("D:/new.txt",values.Select((v) =>(string) v ).ToArray());
     }
     private ListeningView()
     {    }

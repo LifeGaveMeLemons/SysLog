@@ -5,6 +5,9 @@ using System.Text;
 
 namespace SysLog.Listeners
 {
+  /// <summary>
+  ///   Represnets a Tcp connection with a client, removes itself when connection is terminated.
+  /// </summary>
   internal class TcpSessionListener : Listener
   {
     private static string description = "Tcp Handler";
@@ -15,6 +18,9 @@ namespace SysLog.Listeners
     NetworkStream stream;
     TcpClient client;
 
+    /// <summary>
+    ///   Release unamanaged resources.
+    /// </summary>
     public override void Dispose()
     {
       stream.Close();
@@ -23,16 +29,26 @@ namespace SysLog.Listeners
       client.Dispose();
       GC.SuppressFinalize(this);
     }
+    /// <summary>
+    /// Checks whether the connection has been ternimated.
+    /// </summary>
+    /// <returns> True if the connection has been termiated and false if it has not been</returns>
     private bool CheckForConnection()
     {
       return (client.Client.Poll(1000, SelectMode.SelectRead) && client.Client.Available == 0);
     }
-
+    /// <summary>
+    ///   Gets the description of the specific listener type.
+    /// </summary>
+    /// <returns> a very short description of the type of listener.</returns>
     override public string GetDescription()
     {
       return description;
     }
-    override  public void CheckForMessages()
+    /// <summary>
+    ///   Checks the client for new inbound messages.
+    /// </summary>
+    override public void CheckForMessages()
     {
 
       string s ="";
@@ -61,6 +77,12 @@ namespace SysLog.Listeners
       }
     }
 
+    /// <summary>
+    ///   Creates an instance of TcpSessionListener that listens based on the passed TcpClient.
+    /// </summary>
+    /// <param name="client">The underlying connection for this listener. Since Tcp requires potentially multiple connections, </param>
+    /// <param name="callback">Method to be invoked and have the message be passed to whenever the listener recieves messages.</param>
+    /// <param name="rm">invokes this callback whenever the session is terminated</param>
     public TcpSessionListener(TcpClient client, Action<SyslogIpModel> callback, Action<TcpSessionListener> rm)
     {
       this.client = client;

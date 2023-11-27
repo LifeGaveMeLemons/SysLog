@@ -8,10 +8,13 @@ using System.Threading;
 using System.Runtime.CompilerServices;
 using System.Net;
 using SysLog.UI.Data;
+using SysLog.UI;
 
 namespace SysLog.Handlers
 {
-  
+  /// <summary>
+  /// Handled inbound messages.
+  /// </summary>
   internal class Handler
   {
     object valuesListKey;
@@ -23,7 +26,10 @@ namespace SysLog.Handlers
     bool IsRunning = true;
     public static ConsoleColor[] colors;
 
-    Action<SyslogIpModel>? listeningView; 
+    Action<DelimitedMessageModel>? listeningView; 
+    /// <summary>
+    ///   Creates new instance of Handler.
+    /// </summary>
     private Handler()
     {
 
@@ -32,7 +38,12 @@ namespace SysLog.Handlers
       HandlerThread = new Thread(Process);
       HandlerThread.Start();
     }
-    public void SetCallback(Action<SyslogIpModel>? c)
+
+    /// <summary>
+    ///   Sets Delegate to pass first processed data to.
+    /// </summary>
+    /// <param name="c">Delegate that takes DelimitedMessageModel as a param</param>
+    public void SetCallback(Action<DelimitedMessageModel>? c)
     {
       if (c == null) 
       {
@@ -42,6 +53,10 @@ namespace SysLog.Handlers
       listeningView = c;
       Start();
     }
+
+    /// <summary>
+    ///   Starts processing Data
+    /// </summary>
     public void Start()
     {
       if (!IsRunning)
@@ -52,6 +67,10 @@ namespace SysLog.Handlers
       }
 
     }
+
+    /// <summary>
+    /// Stops processing data
+    /// </summary>
     public void Stop()
     {
       if (IsRunning)
@@ -62,6 +81,11 @@ namespace SysLog.Handlers
         valuesToProcess = null;
       }
     }
+
+    /// <summary>
+    ///   Adds new inbound messages to queue, if the Handler is running.
+    /// </summary>
+    /// <param name="s">raw string and src IP data from the message</param>
     public void Enqueue(SyslogIpModel s)
     {
       if (!IsRunning)
@@ -71,6 +95,9 @@ namespace SysLog.Handlers
         valuesToProcess.Enqueue(s);
     }
 
+    /// <summary>
+    ///   Processes data that has eben added to the queue. Puts it into a separated format, and passes it further for further processing.
+    /// </summary>
     public void Process()
     {
 
@@ -80,13 +107,10 @@ namespace SysLog.Handlers
         {
           if (valuesToProcess.TryDequeue(out SyslogIpModel v))
           {
-
-            string numString = v.msg.Substring(1, v.msg.IndexOf('>')-1);
-            int number = Convert.ToInt32(numString != "" ? numString : 0);
-            v.severity = (byte) (number % 8);
+            DelimitedMessageModel m = new DelimitedMessageModel(v.msg, v.ip);
             if (listeningView != null)
             {
-              listeningView(v);
+              listeningView(m);
             }
 
           }
@@ -99,6 +123,11 @@ namespace SysLog.Handlers
       }
       
     }
+
+    /// <summary>
+    ///   Singleton class. Uses static method to create or copy refrence.
+    /// </summary>
+    /// <returns>New instance of Hanlder in one doesent exists, otherwise returns the instance currently active.</returns>
     public static Handler Create()
     {
       if (instance == null)

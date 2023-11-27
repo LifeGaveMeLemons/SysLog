@@ -9,10 +9,21 @@ using SysLog.UI.Data;
 
 namespace SysLog.ListenerCol
 {
+  /// <summary>
+  /// Manages all of the lsiteners in the program
+  /// </summary>
   internal class ListenerCollection
   {
+    /// <summary>
+    /// Singleton class, static field to store current instance.
+    /// </summary>
     private static ListenerCollection instance;
 
+    /// <summary>
+    /// Static create Method returns an active ListenerCollection object. If no such objects exist, creates a new one.
+    /// </summary>
+    /// <param name="callback">Callback for any messages recieved</param>
+    /// <returns></returns>
     public static ListenerCollection Create(Action<SyslogIpModel>? callback)
     {
       if (instance == null) 
@@ -45,6 +56,10 @@ namespace SysLog.ListenerCol
     private object key = new object();
 
 
+    /// <summary>
+    ///   Returns a new list wil all the UdpListeners currently active.
+    /// </summary>
+    /// <returns>A List of all active UdpListeners</returns>
     public List<UdpListener> GetUdpList()
     {
       List<UdpListener> li = new List<UdpListener>();
@@ -57,6 +72,10 @@ namespace SysLog.ListenerCol
       }
       return li;
     }
+    /// <summary>
+    ///   Returns a new list wil all the InboundConnectionListeners currently active.
+    /// </summary>
+    /// <returns>A List of all active InboundConnectionListeners </returns>
     public List<InboundConnectionListener> GetTcpListeners()
     {
       List<InboundConnectionListener> li = new List<InboundConnectionListener>();
@@ -69,6 +88,10 @@ namespace SysLog.ListenerCol
       }
       return li;
     }
+
+    /// <summary>
+    ///   Checks all InboundConnectionlisteners for new connections.
+    /// </summary>
     private void CheckForInboundConnections()
     {
       while (isListeningTCP)
@@ -93,6 +116,11 @@ namespace SysLog.ListenerCol
         }
       }
     }
+
+    /// <summary>
+    ///   Removes specified Listener.
+    /// </summary>
+    /// <param name="l">TcpSessionlistener to be removed.</param>
     public void RemoveClient(TcpSessionListener l)
     {
       lock(key) 
@@ -101,6 +129,10 @@ namespace SysLog.ListenerCol
         Clients.Remove(l);
       }
     }
+    /// <summary>
+    ///   Removes specified Listener.
+    /// </summary>
+    /// <param name="l">UdpListener to be removed.</param>
     public void RemoveClient(UdpListener l)
     {
       lock (key)
@@ -111,6 +143,10 @@ namespace SysLog.ListenerCol
       }
     }
 
+    /// <summary>
+    ///   Removes specified Listener.
+    /// </summary>
+    /// <param name="l">Removes specified InboundConnectionListener to be removed.</param>
     public void RemoveTcpListener(InboundConnectionListener l)
     {
       lock(keyConInitializer)
@@ -119,6 +155,10 @@ namespace SysLog.ListenerCol
       }
     }
 
+    /// <summary>
+    ///   Adds InboundConnectionListener on specified port.
+    /// </summary>
+    /// <param name="port"> Port to be added on.</param>
     public void AddIncomingConnectionListener(int port)
     {
       lock(keyConInitializer)
@@ -126,6 +166,10 @@ namespace SysLog.ListenerCol
         listenerList.Add(new InboundConnectionListener(port));
       }
     }
+
+    /// <summary>
+    ///   Checks for inbound messages across all listeners
+    /// </summary>
     private void CheckForMessages()
     {
       while (true)
@@ -150,6 +194,11 @@ namespace SysLog.ListenerCol
 
 
         }
+
+    /// <summary>
+    ///   Adds UdpListener.
+    /// </summary>
+    /// <param name="listener">Listener to be added.</param>
     public void Add(UdpListener listener)
     {
       lock (key)
@@ -159,7 +208,11 @@ namespace SysLog.ListenerCol
       }
     }
 
-    public ListenerCollection(Action<SyslogIpModel>? callback)
+    /// <summary>
+    /// Creates a new ListenerCollection
+    /// </summary>
+    /// <param name="callback"> Callback to be added</param>
+    private ListenerCollection(Action<SyslogIpModel>? callback)
     {
       Clients = new List<Listener>();
       listenerList = new List<InboundConnectionListener>();

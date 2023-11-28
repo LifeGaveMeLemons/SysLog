@@ -8,12 +8,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace SysLog.UI.Data
+
+namespace SysLog.UI.Data.DelimitedMessageModel
 {
   /// <summary>
   ///   Defines concrete attributes in their own fields to allow the user to interact with them while filtering in a significantly easier manner.
   /// </summary>
-  internal class DelimitedMessageModel
+  public class DelimitedMessageModel
   {
     private const string DATE_TIME_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffK";
     private const string MESSAGE_REGEX = @"^(?:<(?<severity>\d+)>)?(?:<>)?(?<version>\d+) (?<dateTime>.{24}) (?<program>.*?)( - - - - |$)(?<message>.*)";

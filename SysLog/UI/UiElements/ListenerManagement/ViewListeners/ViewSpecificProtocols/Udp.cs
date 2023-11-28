@@ -25,10 +25,10 @@ namespace SysLog.UI.UiElements.ListenerManagement.ViewListeners.ViewSpecificProt
     List<UdpListener> listeners;
     public override void Load()
     {
-      isRunning = true;
+      IsRunning = true;
 
         col = ListenerCollection.Create(null);
-      while (isRunning)
+      while (IsRunning)
       {
         listeners = col.GetUdpList();
         subElements = new List<StringFunctionModel>()
@@ -58,7 +58,7 @@ namespace SysLog.UI.UiElements.ListenerManagement.ViewListeners.ViewSpecificProt
       Console.CursorVisible = false;
       Console.SetCursorPosition(0, 0);
       Console.ForegroundColor = ConsoleColor.DarkGreen; Console.WriteLine(subElements[0]);
-      while (base.isRunning)
+      while (base.IsRunning)
       {
 
         switch (Console.ReadKey().Key)

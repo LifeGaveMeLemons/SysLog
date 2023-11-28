@@ -1,10 +1,6 @@
-﻿using SysLog.UI.Data;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
+using Microsoft.CodeAnalysis.Scripting;
+using SysLog.UI.Data.DelimitedMessageModel;
 
 namespace SysLog.UI.UiElements
 {
@@ -17,7 +13,11 @@ namespace SysLog.UI.UiElements
     bool isUpdated = false;
     int MaxValue;
     object maxValuekey = new object();
-    public static ListeningView Create()
+
+    public Script<bool>? filter;
+
+
+		public static ListeningView Create()
     {
       if (instance == null)
       {
@@ -25,9 +25,11 @@ namespace SysLog.UI.UiElements
       }
       return instance;
     }
+
+
     internal override void Exit()
     {
-      isRunning = false;
+      IsRunning = false;
       values = null;
       queue = null;
     }
@@ -41,7 +43,7 @@ namespace SysLog.UI.UiElements
     }
     private void RecieveValue(DelimitedMessageModel v)
     {
-      if (isRunning)
+      if (IsRunning)
       {
         isUpdated = true;
         queue.Enqueue(v);
@@ -52,7 +54,7 @@ namespace SysLog.UI.UiElements
       DelimitedMessageModel v;
       if (queue.TryDequeue(out v))
       {
-        values.Add(v);
+
         yield return v;
       }
       else yield break;
@@ -61,21 +63,44 @@ namespace SysLog.UI.UiElements
     internal override void StartNavigation()
     {
       int currentValue = 0;
-      while (isRunning)
+      while (IsRunning)
       {
-
-        foreach (DelimitedMessageModel item in CheckForNewValues())
+        if (filter == null)
         {
-          Console.ForegroundColor = Handlers.Handler.colors[item.SeverityCalc];
-          
-          lock(maxValuekey)
+          foreach (DelimitedMessageModel item in CheckForNewValues())
           {
-            MaxValue++;
+						values.Add(item);
+						Console.ForegroundColor = Handlers.Handler.colors[item.SeverityCalc];
+
+            lock (maxValuekey)
+            {
+              MaxValue++;
+            }
+            Console.SetCursorPosition(0, MaxValue);
+            Console.WriteLine((string)item);
+            Console.SetCursorPosition(0, currentValue);
           }
-          Console.SetCursorPosition(0, MaxValue);
-          Console.WriteLine((string)item);
-          Console.SetCursorPosition(0, currentValue);
         }
+        else
+        {
+					foreach (DelimitedMessageModel item in CheckForNewValues())
+					{
+            bool v = filter.RunAsync(item).Result.ReturnValue;
+						if (v)
+            {
+							values.Add(item);
+							Console.ForegroundColor = Handlers.Handler.colors[item.SeverityCalc];
+
+              lock (maxValuekey)
+              {
+                MaxValue++;
+              }
+              Console.SetCursorPosition(0, MaxValue);
+              Console.WriteLine((string)item);
+              Console.SetCursorPosition(0, currentValue);
+            }
+					}
+				}
         if (Console.KeyAvailable)
         {
           switch (Console.ReadKey().Key)
@@ -139,7 +164,7 @@ namespace SysLog.UI.UiElements
     }
     private void SaveValues()
     {
-      isRunning = false;
+      IsRunning = false;
       File.WriteAllLines("D:/new.txt",values.Select((v) =>(string) v ).ToArray());
     }
     private ListeningView()

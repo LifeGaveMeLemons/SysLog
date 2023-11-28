@@ -35,6 +35,7 @@ namespace SysLog.UI.UiElements
       subElements = new List<StringFunctionModel> {
         new StringFunctionModel("Listeners",SysLog.UI.ListenerManagement.Create().Load),
         new StringFunctionModel("View Messages", ListeningView.Create().Load),
+        new StringFunctionModel("Settings",SettingsView.SettingsView.Create().Load),
         new StringFunctionModel("Exit",Exit)
       };
 

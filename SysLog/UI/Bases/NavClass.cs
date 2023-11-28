@@ -14,15 +14,15 @@ namespace SysLog.UI
   {
 
     internal List<StringFunctionModel> subElements;
-    internal bool isRunning = true;
+    internal bool IsRunning = true;
 
     /// <summary>
     ///   Serves as the enry opint to any UI element.
     /// </summary>
     public  virtual void Load()
     {
-      isRunning = true;
-      while (isRunning)
+      IsRunning = true;
+      while (IsRunning)
       {
         Console.Clear();
         StartNavigation();
@@ -68,7 +68,7 @@ namespace SysLog.UI
       Console.CursorVisible = false;
       Console.SetCursorPosition(0,0);
       Console.ForegroundColor = ConsoleColor.DarkGreen; Console.WriteLine(subElements[0]);
-      while (isRunning)
+      while (IsRunning)
       {
 
         switch (Console.ReadKey().Key)
@@ -111,7 +111,7 @@ namespace SysLog.UI
     /// </summary>
     internal virtual void Exit()
     {
-      isRunning = false;
+      IsRunning = false;
     }
   }
 }

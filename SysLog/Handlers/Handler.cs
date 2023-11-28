@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using System.Threading;
-using System.Runtime.CompilerServices;
-using System.Net;
+﻿using System.Collections.Concurrent;
 using SysLog.UI.Data;
-using SysLog.UI;
+using SysLog.UI.Data.DelimitedMessageModel;
 
 namespace SysLog.Handlers
 {

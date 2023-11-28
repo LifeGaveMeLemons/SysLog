@@ -28,8 +28,8 @@ namespace SysLog.UI
     List<InboundConnectionListener> listeners;
     public override void Load()
     {
-      isRunning = true;
-      while (isRunning)
+      IsRunning = true;
+      while (IsRunning)
       {
         col = ListenerCollection.Create(null);
         listeners = col.GetTcpListeners();
@@ -58,7 +58,7 @@ namespace SysLog.UI
       Console.CursorVisible = false;
       Console.SetCursorPosition(0, 0);
       Console.ForegroundColor = ConsoleColor.DarkGreen; Console.WriteLine(subElements[0]);
-      while (isRunning)
+      while (IsRunning)
       {
 
         switch (Console.ReadKey().Key)

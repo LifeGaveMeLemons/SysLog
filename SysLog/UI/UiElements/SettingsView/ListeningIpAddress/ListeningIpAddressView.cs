@@ -10,7 +10,7 @@ namespace SysLog.UI.UiElements
 		/// <summary>
 		/// The currently selected listening IP address.
 		/// </summary>
-		public static IPAddress CurrentListeningAddress = IPAddress.Any;
+		public static IPAddress CurrentListeningAddress = IPAddress.Loopback;
 		private NetworkInterface[] _networkInterfaces;
 		private List<NicIpModel> _networkInterfaceIpAddresses;
 

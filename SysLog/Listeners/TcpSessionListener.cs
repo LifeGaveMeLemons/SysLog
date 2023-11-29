@@ -1,4 +1,5 @@
 ﻿using SysLog.UI.Data;
+using SysLog.UI.UiElements.SettingsView;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -26,7 +27,8 @@ namespace SysLog.Listeners
       string temp = _client.Client.RemoteEndPoint.ToString();
 
 			string fileName = $"{temp.Substring(0,temp.IndexOf(':'))}_{DateTime.Now.ToString("yyyyMMddHHmmssff")}";
-      File.WriteAllLines($"D:/{fileName}.txt", _allMessages);
+      File.WriteAllLines($"{SettingsView.BaseDir}/{fileName}.txt", _allMessages);
+      _allMessages = null;
       _stream.Close();
       _stream.Dispose();
       _client.Close();

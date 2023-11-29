@@ -4,6 +4,7 @@ namespace SysLog.UI.UiElements.SettingsView
 {
 	internal class SettingsView : NavClass
 	{
+		public static string BaseDir = "C:/";
 		private static SettingsView s_instance;
 
 		/// <summary>
@@ -18,7 +19,19 @@ namespace SysLog.UI.UiElements.SettingsView
 			}
 			return s_instance;
 		}
-
+		private void GetDirectory()
+		{
+			while (true)
+			{
+				Console.WriteLine("please enter the directory you would like to save all captures to");
+				string input = Console.ReadLine();
+				if (Directory.Exists(input))
+				{
+					BaseDir = input;
+					return;
+				}
+			}
+		}
 		/// <summary>
 		/// Constructor for the SettingsView class. Initializes sub-elements.
 		/// </summary>
@@ -29,6 +42,7 @@ namespace SysLog.UI.UiElements.SettingsView
 				new StringFunctionModel("Colours",ColourDefinitionView.Create().Load),
 				new StringFunctionModel("Filtering",FilterDefinition.Create().Load),
 				new StringFunctionModel("Set Listening Address", ListeningIpAddressView.Create().Load),
+				new StringFunctionModel("Set saving directory",)
 				new StringFunctionModel("exit",Exit)
 			};
 		}

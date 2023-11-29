@@ -13,4 +13,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.8.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UI\UiElements\SettingsView\DirectoryDefinitionView\" />
+  </ItemGroup>
+
 </Project>

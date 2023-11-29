@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using SysLog.UI.Data;
 using SysLog.UI.UiElements;
+using SysLog.UI.UiElements.SettingsView;
 
 namespace SysLog.Listeners
 {
@@ -15,6 +16,7 @@ namespace SysLog.Listeners
     private static string s_descriiption = "UDP Listener";
     private UdpClient _client;
     private Action<SyslogIpModel> _dataCallback;
+    private List<string> _messages;
     public ushort Port{ get; private set; }
 
     /// <summary>
@@ -22,6 +24,11 @@ namespace SysLog.Listeners
     /// </summary>
     public override void Dispose()
     {
+			string temp = _client.Client.LocalEndPoint.ToString();
+
+			string fileName = $"{temp.Substring(0, temp.IndexOf(':'))}_{DateTime.Now.ToString("yyyyMMddHHmmssff")}";
+			File.WriteAllLines($"{SettingsView.BaseDir}/{fileName}.txt", _messages);
+			_messages = null;
       _dataCallback = null;
       if (_client != null)
       {
@@ -63,6 +70,7 @@ namespace SysLog.Listeners
             {
               return;
             }
+            _messages.Add(resultData);
             _dataCallback(new SyslogIpModel(ip, resultData,false));
           }
         }
@@ -81,6 +89,7 @@ namespace SysLog.Listeners
       this.OnRecieve = callback;
       _client = new UdpClient();
       _client.Client.Bind(new IPEndPoint(ListeningIpAddressView.CurrentListeningAddress, port));
+      _messages = new List<string>();
       
     }
     public void ChangeIp(IPAddress address)
@@ -92,6 +101,7 @@ namespace SysLog.Listeners
         _client = new UdpClient();
         _client.Client.Bind(new IPEndPoint(address, Port));
       }
+      _messages = new List<string>();
     }
 
     /// <summary>

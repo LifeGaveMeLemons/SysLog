@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using SysLog.UI.UiElements;
+﻿using SysLog.UI.UiElements;
 
 namespace SysLog.UI
 {

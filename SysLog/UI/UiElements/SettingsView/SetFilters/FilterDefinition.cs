@@ -1,9 +1,11 @@
 ﻿using System.Collections.Immutable;
+using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using SysLog.UI.Data.DelimitedMessageModel;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SysLog.UI.UiElements.SetFilters
 {
@@ -42,21 +44,37 @@ namespace SysLog.UI.UiElements.SetFilters
 		{
 			while (true)
 			{
-				Console.WriteLine("please enter your filtering pattern, leave empty to disable the filter");
+				Console.CursorVisible = true;
+				Console.WriteLine("Please enter your filtering pattern, leave empty to disable the filter");
 				string userInput = Console.ReadLine();
-				if (userInput != "")
+				if (!string.IsNullOrEmpty(userInput))
 				{
+					// Validate user input against the regex
 					if (!Regex.IsMatch(userInput, _regex))
 					{
-						Console.WriteLine("you can only use alphanumeric characters, numbers, and <, >, =, -, +, ?, :, &, |");
+						Console.WriteLine("Input not valid. Use alphanumeric characters, numbers, <, >, =, -, +, ?, :, &, |, or an IP address.");
 						continue;
 					}
-					string codeToCompile = $"return {userInput};";
+
+					// Automatically encapsulate IP address patterns with IPAddress.Parse()
+					string modifiedInput = Regex.Replace(userInput, @"\b\d{1,3}(\.\d{1,3}){3}\b", m => $"IPAddress.Parse(\"{m.Value}\")");
+
+					string codeToCompile = $"return {modifiedInput};";
+
 					_script = CSharpScript.Create<bool>(codeToCompile, _scriptOptions, typeof(DelimitedMessageModel));
-					ImmutableArray<Diagnostic> a = _script.Compile();
-					if (a.Length > 0)
+					ImmutableArray<Diagnostic> diagnostics = _script.Compile();
+					try
 					{
-						foreach (Diagnostic msg in a)
+						ScriptState<bool> s = _script.RunAsync(new DelimitedMessageModel("<17>1 2023-11-06T10:11:12.381Z Park Air Systems LTD, test app. - - - - VAU3303G", new System.Net.IPEndPoint(IPAddress.Any, 514), true)).Result;
+					}
+					catch (Exception e)
+					{
+						Console.WriteLine(e.Message);
+						continue;
+					}
+					if (diagnostics.Length > 0)
+					{
+						foreach (Diagnostic msg in diagnostics)
 						{
 							Console.WriteLine(msg);
 						}
@@ -69,13 +87,15 @@ namespace SysLog.UI.UiElements.SetFilters
 					ListeningView.Create().Filter = null;
 				}
 				Exit();
+				Console.CursorVisible = false;
 				return;
 			}
 		}
 
+
 		private FilterDefinition()
 		{
-			_scriptOptions = ScriptOptions.Default.AddImports("System", "SysLog.UI.Data.DelimitedMessageModel").AddImports().AddReferences(typeof(DelimitedMessageModel).Assembly);
+			_scriptOptions = ScriptOptions.Default.AddImports("System", "SysLog.UI.Data.DelimitedMessageModel","System.Net").AddImports().AddReferences(typeof(DelimitedMessageModel).Assembly);
 		}
 	}
 }

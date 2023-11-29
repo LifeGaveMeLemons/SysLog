@@ -1,33 +1,36 @@
 ﻿using SysLog.UI.UiElements.SetFilters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SysLog.UI.UiElements.SettingsView
 {
-  internal class SettingsView : NavClass
-  {
-    private static SettingsView instance;
+	internal class SettingsView : NavClass
+	{
+		private static SettingsView s_instance;
 
-    public static SettingsView Create()
-    {
-      if (instance == null)
-      {
-        instance = new SettingsView();
-      }
-      return instance;
-    }
+		/// <summary>
+		/// Creates an instance of the SettingsView class using the Singleton pattern.
+		/// </summary>
+		/// <returns>The instance of SettingsView.</returns>
+		public static SettingsView Create()
+		{
+			if (s_instance == null)
+			{
+				s_instance = new SettingsView();
+			}
+			return s_instance;
+		}
 
-    public SettingsView()
-    {
-      subElements = new List<StringFunctionModel>()
-      {
-        new StringFunctionModel("Colours",ColourDefinitionView.Create().Load),
-        new StringFunctionModel("Filtering",FilterDefinition.Create().Load),
-        new StringFunctionModel("exit",Exit)
-      };
-    }
-  }
+		/// <summary>
+		/// Constructor for the SettingsView class. Initializes sub-elements.
+		/// </summary>
+		private SettingsView()
+		{
+			_subElements = new List<StringFunctionModel>()
+			{
+				new StringFunctionModel("Colours",ColourDefinitionView.Create().Load),
+				new StringFunctionModel("Filtering",FilterDefinition.Create().Load),
+				new StringFunctionModel("Set Listening Address", ListeningIpAddressView.Create().Load),
+				new StringFunctionModel("exit",Exit)
+			};
+		}
+	}
 }

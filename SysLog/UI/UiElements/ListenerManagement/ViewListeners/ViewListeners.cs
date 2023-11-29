@@ -23,7 +23,7 @@ namespace SysLog.UI
 
     public ViewListeners()
     {
-      subElements = new List<StringFunctionModel>
+      _subElements = new List<StringFunctionModel>
             {
               new StringFunctionModel("TCP",Tcp.Create().Load),
               new StringFunctionModel("UDP", Udp.Create().Load),

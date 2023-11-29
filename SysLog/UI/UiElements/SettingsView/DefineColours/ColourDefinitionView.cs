@@ -1,79 +1,89 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SysLog.UI.UiElements
+﻿namespace SysLog.UI.UiElements
 {
 	internal class ColourDefinitionView : NavClass
 	{
-		int MaxValue;
-		int CurrentValue = 0;
-		private static ColourDefinitionView insatnce ;
+		private int _maxValue;
+		private int _currentValue = 0;
+		private static ColourDefinitionView s_instance;
+
+		/// <summary>
+		/// Creates an instance of ColourDefinitionView class using the Singleton pattern.
+		/// </summary>
+		/// <returns>The instance of ColourDefinitionView.</returns>
 		public static ColourDefinitionView Create()
 		{
-			if (insatnce == null)
+			if (s_instance == null)
 			{
-				insatnce = new ColourDefinitionView();
+				s_instance = new ColourDefinitionView();
 			}
-			return insatnce ;
+			return s_instance;
 		}
+
+		/// <summary>
+		/// Loads the ColourDefinitionView.
+		/// </summary>
 		public override void Load()
 		{
-
 			base.Load();
 		}
+
+		/// <summary>
+		/// Starts the navigation within the ColourDefinitionView.
+		/// </summary>
 		internal override void StartNavigation()
 		{
-			subElements = Handlers.Handler.colors.Select((color, index) => new StringFunctionModel($"severity:{index} - {color.ToString()}", SetColor)).ToList();
-			subElements.Add(new StringFunctionModel("Exit", Exit));
-			MaxValue = subElements.Count - 1;
+			// Create sub-elements based on colors and set up navigation
+			_subElements = Handlers.Handler.colors.Select((color, index) => new StringFunctionModel($"severity:{index} - {color.ToString()}", SetColor)).ToList();
+			_subElements.Add(new StringFunctionModel("Exit", Exit));
+			_maxValue = _subElements.Count - 1;
 
 			Console.ForegroundColor = ConsoleColor.White;
-			foreach (StringFunctionModel val in subElements)
+			foreach (StringFunctionModel val in _subElements)
 			{
 				Console.WriteLine(val);
 			}
 			Console.CursorVisible = false;
-			while (IsRunning)
+			while (_isRunning)
 			{
-
 				switch (Console.ReadKey().Key)
 				{
+					// Handle navigation key presses
 					case ConsoleKey.DownArrow:
-						RemoveColor(CurrentValue);
-						if (CurrentValue == MaxValue)
+						RemoveColor(_currentValue);
+						if (_currentValue == _maxValue)
 						{
-							CurrentValue = 0;
+							_currentValue = 0;
 						}
 						else
 						{
-							CurrentValue++;
+							_currentValue++;
 						}
-						SetColor(CurrentValue);
+						SetColor(_currentValue);
 						break;
 					case ConsoleKey.UpArrow:
-						RemoveColor(CurrentValue);
-						if (CurrentValue == 0)
+						RemoveColor(_currentValue);
+						if (_currentValue == 0)
 						{
-							CurrentValue = MaxValue;
+							_currentValue = _maxValue;
 						}
 						else
 						{
-							CurrentValue--;
+							_currentValue--;
 						}
-						SetColor(CurrentValue);
+						SetColor(_currentValue);
 						break;
 					case ConsoleKey.Enter:
-						subElements[CurrentValue].Method.Invoke();
+						_subElements[_currentValue].Method.Invoke();
 						return;
 					default:
 						continue;
 				}
 			}
 		}
+
+		/// <summary>
+		/// Sets the color for a severity level.
+		/// </summary>
 		private void SetColor()
 		{
 			int numberOfElements = 1;
@@ -92,11 +102,11 @@ namespace SysLog.UI.UiElements
 					int number = Convert.ToInt32(input);
 					if (number > 0 && number < numberOfElements)
 					{
-						Handlers.Handler.colors[CurrentValue] = Enum.GetValues(typeof(ConsoleColor)).Cast<ConsoleColor>().ToArray()[number-1] ;
+						Handlers.Handler.colors[_currentValue] = Enum.GetValues(typeof(ConsoleColor)).Cast<ConsoleColor>().ToArray()[number - 1];
 					}
 					else
 					{
-						Console.WriteLine($"please enter a  number between 0 and {numberOfElements}");
+						Console.WriteLine($"please enter a number between 0 and {numberOfElements}");
 						continue;
 					}
 					break;
@@ -107,19 +117,19 @@ namespace SysLog.UI.UiElements
 				}
 				catch (OverflowException)
 				{
-					Console.WriteLine($"please enter a  number between 0 and {numberOfElements}");
+					Console.WriteLine($"please enter a number between 0 and {numberOfElements}");
 				}
-				catch(Exception e) 
+				catch (Exception e)
 				{
 					Console.WriteLine("unknown error");
-					Console.WriteLine(e.ToString()); 
+					Console.WriteLine(e.ToString());
 				}
 			}
-
 		}
-		public ColourDefinitionView()
+
+		// Private constructor to enforce Singleton pattern
+		private ColourDefinitionView()
 		{
 		}
-		
 	}
 }

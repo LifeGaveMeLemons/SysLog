@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net.Sockets;
 using System.Net;
+using SysLog.UI.UiElements;
 
 namespace SysLog.Listeners
 {
@@ -13,9 +9,9 @@ namespace SysLog.Listeners
   /// </summary>
   internal class InboundConnectionListener : IDisposable
   {
-    private static string description = "Tcp Listener";
+    private static string _description = "Tcp Listener";
 
-    TcpListener listener;
+    private TcpListener _listener;
     public ushort Port { get; private set; }
 
     /// <summary>
@@ -25,8 +21,8 @@ namespace SysLog.Listeners
     public InboundConnectionListener(int port)
     {
       this.Port = (ushort)port;
-      listener = new TcpListener(new IPEndPoint(IPAddress.Any, port));
-      listener.Start();
+      _listener = new TcpListener(new IPEndPoint(ListeningIpAddressView.CurrentListeningAddress, port));
+      _listener.Start();
     }
 
     /// <summary>
@@ -35,10 +31,9 @@ namespace SysLog.Listeners
     /// <returns>null if no new connections have been made, a new TcpClient that is fully initialized and ready to go if a new connection is made.</returns>
      public TcpClient? CheckForConnections()
     {
-      if (listener.Pending())
+      if (_listener.Pending())
       {
-                Console.WriteLine( "pend");
-                return listener.AcceptTcpClient();
+                return _listener.AcceptTcpClient();
       }
       else return null;
     }
@@ -49,16 +44,25 @@ namespace SysLog.Listeners
     /// <returns> A very short description of the type of listener.</returns>
     public string GetDesription()
     {
-      return $"{description} listening on port {Port}";
+      return $"{_description} listening on port {Port}";
     }
-
+    /// <summary>
+    /// changes the listening Ip address of this lsitener
+    /// </summary>
+    /// <param name="address">address to be changed to</param>
+    public void ChangeIp(IPAddress address)
+    {
+      _listener.Stop();
+      _listener.Server.Bind(new IPEndPoint(address,Port));
+      _listener.Start();
+    }
     /// <summary>
     ///   Release unamanaged resources.
     /// </summary>
     public void Dispose()
     {
-      listener.Stop();
-      listener = null;
+      _listener.Stop();
+      _listener = null;
     }
 
 

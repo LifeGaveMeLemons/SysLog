@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using SysLog.Exceptions;
 using SysLog.UI.Data;
+using SysLog.UI.UiElements;
 
 namespace SysLog.Listeners
 {
@@ -16,9 +12,9 @@ namespace SysLog.Listeners
   /// </summary>
   internal class UdpListener : Listener
   {
-    private static string descriiption = "UDP Listener";
-    private UdpClient client;
-    private Action<SyslogIpModel> dataCallback;
+    private static string s_descriiption = "UDP Listener";
+    private UdpClient _client;
+    private Action<SyslogIpModel> _dataCallback;
     public ushort Port{ get; private set; }
 
     /// <summary>
@@ -26,11 +22,11 @@ namespace SysLog.Listeners
     /// </summary>
     public override void Dispose()
     {
-      dataCallback = null;
-      if (client != null)
+      _dataCallback = null;
+      if (_client != null)
       {
-        client.Close();
-        client.Dispose();
+        _client.Close();
+        _client.Dispose();
       }
 
       GC.SuppressFinalize(this);
@@ -38,7 +34,7 @@ namespace SysLog.Listeners
     /// <summary>
     /// assign empty lambda to avoid null checks
     /// </summary>
-    public Action<SyslogIpModel> OnRecieve { set{ dataCallback = value == null?(SyslogIpModel val)=> { }:value; } }
+    public Action<SyslogIpModel> OnRecieve { set{ _dataCallback = value == null?(SyslogIpModel val)=> { }:value; } }
 
     /// <summary>
     ///   Gets the description of the specific listener type.
@@ -46,7 +42,7 @@ namespace SysLog.Listeners
     /// <returns> A very short description of the type of listener.</returns>
     override public string GetDescription()
     {
-      return  $"{descriiption} listeing in port {Port}";
+      return  $"{s_descriiption} listeing in port {Port}";
     }
 
     /// <summary>
@@ -56,16 +52,19 @@ namespace SysLog.Listeners
     {
       try
       {
-        if (client.Available > 0)
+        lock (this)
         {
-          IPEndPoint ip = new IPEndPoint(IPAddress.Any, Port);
-          byte[]? bytes = client.Receive(ref ip);
-          string resultData = Encoding.UTF8.GetString(bytes);
-          if (resultData == "")
+          if (_client.Available > 0)
           {
-            return;
+            IPEndPoint ip = new IPEndPoint(IPAddress.Any, Port);
+            byte[]? bytes = _client.Receive(ref ip);
+            string resultData = Encoding.UTF8.GetString(bytes);
+            if (resultData == "")
+            {
+              return;
+            }
+            _dataCallback(new SyslogIpModel(ip, resultData,false));
           }
-          dataCallback(new SyslogIpModel(ip,resultData, 2));
         }
       }
       catch (Exception ex) { Console.WriteLine(ex); }
@@ -80,7 +79,19 @@ namespace SysLog.Listeners
     {
       this.Port = port;
       this.OnRecieve = callback;
-      client = new UdpClient(port);
+      _client = new UdpClient();
+      _client.Client.Bind(new IPEndPoint(ListeningIpAddressView.CurrentListeningAddress, port));
+      
+    }
+    public void ChangeIp(IPAddress address)
+    {
+      lock (this)
+      {
+        _client.Close();
+        _client.Dispose();
+        _client = new UdpClient();
+        _client.Client.Bind(new IPEndPoint(address, Port));
+      }
     }
 
     /// <summary>

@@ -1,39 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SysLog.UI;
-using SysLog.UI.UiElements;
 using SysLog.UI.UiElements;
 
 namespace SysLog.UI
 {
-  internal class ListenerManagement :NavClass
-  {
-    private static ListenerManagement instance;
-    public static ListenerManagement Create()
-    {
-      if (instance == null)
-      {
-        instance = new ListenerManagement();
-      }
-      return instance;
-    }
-    public static ListenerManagement Instance;
+	/// <summary>
+	/// Represents a management class for handling listeners in the UI.
+	/// </summary>
+	internal class ListenerManagement : NavClass
+	{
+		private static ListenerManagement s_instance;
 
+		/// <summary>
+		/// Creates a new instance of the ListenerManagement class.
+		/// </summary>
+		private ListenerManagement()
+		{
+			_subElements = new List<StringFunctionModel>()
+						{
+								new StringFunctionModel("Remove Listeners", ViewListeners.Create().Load),
+								new StringFunctionModel("Create a listener", CreateListenerView.Create().Load),
+								new StringFunctionModel("Exit", Exit)
+						};
+		}
 
-    public ListenerManagement()
-    {
-      subElements = new List<StringFunctionModel>(){
-      new StringFunctionModel("Remove Listeners",ViewListeners.Create().Load ),
-      new StringFunctionModel("Crate a listener",CreateListenerView.Create().Load),
-      new StringFunctionModel("exit",Exit)
-    };
-  }
-
-
-
-
-  }
+		/// <summary>
+		/// Creates a singleton instance of the ListenerManagement class.
+		/// </summary>
+		/// <returns>The singleton instance of ListenerManagement.</returns>
+		public static ListenerManagement Create()
+		{
+			if (s_instance == null)
+			{
+				s_instance = new ListenerManagement();
+			}
+			return s_instance;
+		}
+	}
 }

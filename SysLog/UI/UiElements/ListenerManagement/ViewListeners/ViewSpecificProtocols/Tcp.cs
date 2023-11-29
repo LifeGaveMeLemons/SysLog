@@ -28,18 +28,18 @@ namespace SysLog.UI
     List<InboundConnectionListener> listeners;
     public override void Load()
     {
-      IsRunning = true;
-      while (IsRunning)
+      _isRunning = true;
+      while (_isRunning)
       {
         col = ListenerCollection.Create(null);
         listeners = col.GetTcpListeners();
-        subElements = new List<StringFunctionModel>()
+        _subElements = new List<StringFunctionModel>()
           {
             new StringFunctionModel("Exit",Exit)
           };
         foreach (InboundConnectionListener listener in listeners)
         {
-          subElements.Add(new StringFunctionModel(listener.GetDesription(), UdpClient));
+          _subElements.Add(new StringFunctionModel(listener.GetDesription(), UdpClient));
         }
         Console.Clear();
         StartNavigation();
@@ -49,16 +49,16 @@ namespace SysLog.UI
     internal override void StartNavigation()
     {
 
-      int MaxValue = subElements.Count - 1;
+      int MaxValue = _subElements.Count - 1;
       Console.ForegroundColor = ConsoleColor.White;
-      foreach (StringFunctionModel val in subElements)
+      foreach (StringFunctionModel val in _subElements)
       {
         Console.WriteLine(val);
       }
       Console.CursorVisible = false;
       Console.SetCursorPosition(0, 0);
-      Console.ForegroundColor = ConsoleColor.DarkGreen; Console.WriteLine(subElements[0]);
-      while (IsRunning)
+      Console.ForegroundColor = ConsoleColor.DarkGreen; Console.WriteLine(_subElements[0]);
+      while (_isRunning)
       {
 
         switch (Console.ReadKey().Key)
@@ -88,7 +88,7 @@ namespace SysLog.UI
             SetColor(currentValue);
             break;
           case ConsoleKey.Enter:
-            subElements[currentValue].Method.Invoke();
+            _subElements[currentValue].Method.Invoke();
             return;
           default:
             continue;

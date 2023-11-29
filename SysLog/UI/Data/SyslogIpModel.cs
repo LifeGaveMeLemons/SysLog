@@ -1,30 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
 namespace SysLog.UI.Data
 {
-  /// <summary>
-  ///   This model is meant to hold data ona  raw string that has been recieved andf th IP address that it was recieved from.
-  /// </summary>
-  internal class SyslogIpModel
-  {
-    public IPEndPoint ip;
-    public string msg;
+	/// <summary>
+	/// Represents a model for storing Syslog information including IP endpoint, message, and protocol information.
+	/// </summary>
+	internal class SyslogIpModel
+	{
+		/// <summary>
+		/// Gets or sets the IP endpoint associated with the Syslog.
+		/// </summary>
+		public IPEndPoint Ip { get; set; }
 
-    /// <summary>
-    ///   Returns an instance of SyslogIpModel with al fields filled with the corellating values.
-    /// </summary>
-    /// <param name="ip"></param>
-    /// <param name="msg"></param>
-    /// <param name="severity"></param>
-    public SyslogIpModel(IPEndPoint ip, string msg, byte severity)
-    {
-      this.ip = ip;
-      this.msg = msg;
-    }
-  }
+		/// <summary>
+		/// Gets or sets the message associated with the Syslog.
+		/// </summary>
+		public string Msg { get; set; }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the Syslog is using TCP protocol (true) or not (false).
+		/// </summary>
+		public bool IsTcp { get; set; }
+
+		/// <summary>
+		/// Initializes a new instance of the SyslogIpModel class.
+		/// </summary>
+		/// <param name="ip">The IP endpoint associated with the Syslog.</param>
+		/// <param name="msg">The message associated with the Syslog.</param>
+		/// <param name="isTcp">A value indicating whether the Syslog is using TCP protocol (true) or not (false).</param>
+		public SyslogIpModel(IPEndPoint ip, string msg, bool isTcp)
+		{
+			Ip = ip;
+			Msg = msg;
+			IsTcp = isTcp;
+		}
+	}
 }

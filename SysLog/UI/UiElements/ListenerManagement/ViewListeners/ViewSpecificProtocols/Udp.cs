@@ -25,19 +25,19 @@ namespace SysLog.UI.UiElements.ListenerManagement.ViewListeners.ViewSpecificProt
     List<UdpListener> listeners;
     public override void Load()
     {
-      IsRunning = true;
+      _isRunning = true;
 
         col = ListenerCollection.Create(null);
-      while (IsRunning)
+      while (_isRunning)
       {
         listeners = col.GetUdpList();
-        subElements = new List<StringFunctionModel>()
+        _subElements = new List<StringFunctionModel>()
           {
             new StringFunctionModel("Exit",Exit)
           };
         foreach (UdpListener listener in listeners)
         {
-          subElements.Add(new StringFunctionModel(listener.GetDescription(), UdpClient));
+          _subElements.Add(new StringFunctionModel(listener.GetDescription(), UdpClient));
         }
         Console.Clear();
         StartNavigation();
@@ -49,16 +49,16 @@ namespace SysLog.UI.UiElements.ListenerManagement.ViewListeners.ViewSpecificProt
     internal override void StartNavigation()
     {
 
-      int MaxValue = subElements.Count - 1;
+      int MaxValue = _subElements.Count - 1;
       Console.ForegroundColor = ConsoleColor.White;
-      foreach (StringFunctionModel val in subElements)
+      foreach (StringFunctionModel val in _subElements)
       {
         Console.WriteLine(val);
       }
       Console.CursorVisible = false;
       Console.SetCursorPosition(0, 0);
-      Console.ForegroundColor = ConsoleColor.DarkGreen; Console.WriteLine(subElements[0]);
-      while (base.IsRunning)
+      Console.ForegroundColor = ConsoleColor.DarkGreen; Console.WriteLine(_subElements[0]);
+      while (base._isRunning)
       {
 
         switch (Console.ReadKey().Key)
@@ -88,7 +88,7 @@ namespace SysLog.UI.UiElements.ListenerManagement.ViewListeners.ViewSpecificProt
             base.SetColor(currentValue);
             break;
           case ConsoleKey.Enter:
-            subElements[currentValue].Method.Invoke();
+            _subElements[currentValue].Method.Invoke();
             return;
           default:
             continue;

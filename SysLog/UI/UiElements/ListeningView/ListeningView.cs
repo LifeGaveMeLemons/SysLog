@@ -6,53 +6,70 @@ namespace SysLog.UI.UiElements
 {
   internal class ListeningView : NavClass
   {
-    private static ListeningView instance;
-    List<DelimitedMessageModel> values;
+    private static ListeningView s_instance;
+    private List<DelimitedMessageModel> _values;
 
-    ConcurrentQueue<DelimitedMessageModel> queue;
-    bool isUpdated = false;
-    int MaxValue;
-    object maxValuekey = new object();
+    private ConcurrentQueue<DelimitedMessageModel> _queue;
+		private bool _isUpdated = false;
+		private int _maxValue;
+    private object _maxValuekey = new object();
 
-    public Script<bool>? filter;
+    public Script<bool>? Filter;
 
-
+    /// <summary>
+    ///   Singleton creation method ensures onlt one active instance at a time.
+    /// </summary>
+    /// <returns>An active instance of ListeningView.</returns>
 		public static ListeningView Create()
     {
-      if (instance == null)
+      if (s_instance == null)
       {
-        instance = new ListeningView();
+        s_instance = new ListeningView();
       }
-      return instance;
+      return s_instance;
     }
 
-
+    /// <summary>
+    /// Exits to previous UI element.
+    /// </summary>
     internal override void Exit()
     {
-      IsRunning = false;
-      values = null;
-      queue = null;
+      _isRunning = false;
+      _values = null;
+      _queue = null;
     }
+
+    /// <summary>
+    /// Loads this UI component.
+    /// </summary>
     public override void Load()
     {
-      MaxValue = -1;
-      values = new List<DelimitedMessageModel>();
-      queue = new ConcurrentQueue<DelimitedMessageModel>();
+      _maxValue = -1;
+      _values = new List<DelimitedMessageModel>();
+      _queue = new ConcurrentQueue<DelimitedMessageModel>();
       Handlers.Handler.Create().SetCallback(RecieveValue);
       base.Load();
     }
+    /// <summary>
+    /// Adds a new message to the queue, ready to be filtered.
+    /// </summary>
+    /// <param name="v">The message.</param>
     private void RecieveValue(DelimitedMessageModel v)
     {
-      if (IsRunning)
+      if (_isRunning)
       {
-        isUpdated = true;
-        queue.Enqueue(v);
+        _isUpdated = true;
+        _queue.Enqueue(v);
       }
     }
+    /// <summary>
+    /// Gets values ready to be displayed.
+    /// </summary>
+    /// <returns>One value that is a message.</returns>
     private IEnumerable<DelimitedMessageModel> CheckForNewValues()
     {
       DelimitedMessageModel v;
-      if (queue.TryDequeue(out v))
+      if (_queue.TryDequeue(out v))
       {
 
         yield return v;
@@ -60,23 +77,26 @@ namespace SysLog.UI.UiElements
       else yield break;
 
     }
+    /// <summary>
+    ///   begins the stage at which the user can interact witht he UI
+    /// </summary>
     internal override void StartNavigation()
     {
       int currentValue = 0;
-      while (IsRunning)
+      while (_isRunning)
       {
-        if (filter == null)
+        if (Filter == null)
         {
           foreach (DelimitedMessageModel item in CheckForNewValues())
           {
-						values.Add(item);
+						_values.Add(item);
 						Console.ForegroundColor = Handlers.Handler.colors[item.SeverityCalc];
 
-            lock (maxValuekey)
+            lock (_maxValuekey)
             {
-              MaxValue++;
+              _maxValue++;
             }
-            Console.SetCursorPosition(0, MaxValue);
+            Console.SetCursorPosition(0, _maxValue);
             Console.WriteLine((string)item);
             Console.SetCursorPosition(0, currentValue);
           }
@@ -85,17 +105,17 @@ namespace SysLog.UI.UiElements
         {
 					foreach (DelimitedMessageModel item in CheckForNewValues())
 					{
-            bool v = filter.RunAsync(item).Result.ReturnValue;
+            bool v = Filter.RunAsync(item).Result.ReturnValue;
 						if (v)
             {
-							values.Add(item);
+							_values.Add(item);
 							Console.ForegroundColor = Handlers.Handler.colors[item.SeverityCalc];
 
-              lock (maxValuekey)
+              lock (_maxValuekey)
               {
-                MaxValue++;
+                _maxValue++;
               }
-              Console.SetCursorPosition(0, MaxValue);
+              Console.SetCursorPosition(0, _maxValue);
               Console.WriteLine((string)item);
               Console.SetCursorPosition(0, currentValue);
             }
@@ -106,12 +126,12 @@ namespace SysLog.UI.UiElements
           switch (Console.ReadKey().Key)
           {
             case ConsoleKey.DownArrow:
-              if (MaxValue < 0)
+              if (_maxValue < 0)
               {
                 break;
               }
-              RemoveColor(currentValue, values[currentValue].SeverityCalc);
-              if (currentValue == MaxValue)
+              RemoveColor(currentValue, _values[currentValue].SeverityCalc);
+              if (currentValue == _maxValue)
               {
                 currentValue = 0;
               }
@@ -122,14 +142,14 @@ namespace SysLog.UI.UiElements
               SetColor(currentValue);
               break;
             case ConsoleKey.UpArrow:
-              if (MaxValue < 0)
+              if (_maxValue < 0)
               {
                 break;
               }
-              RemoveColor(currentValue, values[currentValue].SeverityCalc);
+              RemoveColor(currentValue, _values[currentValue].SeverityCalc);
               if (currentValue == 0)
               {
-                currentValue = MaxValue;
+                currentValue = _maxValue;
               }
               else
               {
@@ -150,23 +170,40 @@ namespace SysLog.UI.UiElements
         }
       }
     }
+    /// <summary>
+    /// Resets the colour at the specified index.
+    /// </summary>
+    /// <param name="pos">Index at which the elemtn is located.</param>
+    /// <param name="sev">Severity whose color will take palce at the specified loaction.</param>
     internal void RemoveColor(int pos, byte sev)
     {
       Console.SetCursorPosition(0, pos);
       Console.ForegroundColor = Handlers.Handler.colors[sev];
-      Console.WriteLine((string)values[pos]);
+      Console.WriteLine((string)_values[pos]);
     }
+
+    /// <summary>
+    /// Sets colour of specified position to dark green.
+    /// </summary>
+    /// <param name="pos">Position.</param>
     internal override void SetColor(int pos)
     {
       Console.SetCursorPosition(0, pos);
       Console.ForegroundColor = ConsoleColor.DarkGreen;
-      Console.WriteLine((string)values[pos]);
+      Console.WriteLine((string)_values[pos]);
     }
+    /// <summary>
+    /// Saves all values to a file.
+    /// </summary>
     private void SaveValues()
     {
-      IsRunning = false;
-      File.WriteAllLines("D:/new.txt",values.Select((v) =>(string) v ).ToArray());
-    }
+      _isRunning = false;
+			string fileName = $"Listening_Session_{DateTime.Now.ToString("yyyyMMddHHmmssff")}";
+			File.WriteAllLines($"D:/{fileName}.txt", _values.Select((v) => (string) v));
+		}
+    /// <summary>
+    /// Private constructor to enforce singleton reliability.
+    /// </summary>
     private ListeningView()
     {    }
   }

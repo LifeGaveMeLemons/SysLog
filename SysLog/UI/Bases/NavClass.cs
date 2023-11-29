@@ -13,16 +13,16 @@ namespace SysLog.UI
   abstract class NavClass
   {
 
-    internal List<StringFunctionModel> subElements;
-    internal bool IsRunning = true;
+    internal List<StringFunctionModel> _subElements;
+    internal bool _isRunning = true;
 
     /// <summary>
     ///   Serves as the enry opint to any UI element.
     /// </summary>
     public  virtual void Load()
     {
-      IsRunning = true;
-      while (IsRunning)
+      _isRunning = true;
+      while (_isRunning)
       {
         Console.Clear();
         StartNavigation();
@@ -38,7 +38,7 @@ namespace SysLog.UI
     {
       Console.SetCursorPosition(0, pos);
       Console.ForegroundColor = ConsoleColor.White;
-      Console.WriteLine(subElements[pos]);
+      Console.WriteLine(_subElements[pos]);
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ namespace SysLog.UI
     {
       Console.SetCursorPosition(0, pos);
       Console.ForegroundColor = ConsoleColor.DarkGreen;
-      Console.WriteLine(subElements[pos]);
+      Console.WriteLine(_subElements[pos]);
     }
 
     /// <summary>
@@ -58,17 +58,17 @@ namespace SysLog.UI
     internal virtual void StartNavigation()
     {
 
-      int MaxValue = subElements.Count - 1;
+      int MaxValue = _subElements.Count - 1;
       int currentValue = 0;
       Console.ForegroundColor = ConsoleColor.White;
-      foreach (StringFunctionModel val in subElements)
+      foreach (StringFunctionModel val in _subElements)
       {
         Console.WriteLine(val);
       }
       Console.CursorVisible = false;
       Console.SetCursorPosition(0,0);
-      Console.ForegroundColor = ConsoleColor.DarkGreen; Console.WriteLine(subElements[0]);
-      while (IsRunning)
+      Console.ForegroundColor = ConsoleColor.DarkGreen; Console.WriteLine(_subElements[0]);
+      while (_isRunning)
       {
 
         switch (Console.ReadKey().Key)
@@ -98,7 +98,7 @@ namespace SysLog.UI
             SetColor(currentValue);
             break;
           case ConsoleKey.Enter:
-            subElements[currentValue].Method.Invoke();
+            _subElements[currentValue].Method.Invoke();
             return;
           default:
             continue;
@@ -111,7 +111,7 @@ namespace SysLog.UI
     /// </summary>
     internal virtual void Exit()
     {
-      IsRunning = false;
+      _isRunning = false;
     }
   }
 }

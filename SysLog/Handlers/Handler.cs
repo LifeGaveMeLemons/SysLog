@@ -9,16 +9,16 @@ namespace SysLog.Handlers
   /// </summary>
   internal class Handler
   {
-    object valuesListKey;
-    private static Handler instance;
+    private object _valuesListKey;
+    private static Handler s_instance;
 
-    ConcurrentQueue<SyslogIpModel> valuesToProcess;
+    private ConcurrentQueue<SyslogIpModel> _valuesToProcess;
 
-    Thread HandlerThread;
-    bool IsRunning = true;
+    private Thread _handlerThread;
+    private bool _isRunning = true;
     public static ConsoleColor[] colors;
 
-    Action<DelimitedMessageModel>? listeningView; 
+    private Action<DelimitedMessageModel>? _listeningView; 
     /// <summary>
     ///   Creates new instance of Handler.
     /// </summary>
@@ -26,9 +26,9 @@ namespace SysLog.Handlers
     {
 
       colors = new ConsoleColor[] { ConsoleColor.DarkBlue, ConsoleColor.Magenta, ConsoleColor.Yellow, ConsoleColor.Red, ConsoleColor.DarkBlue, ConsoleColor.Magenta, ConsoleColor.Yellow, ConsoleColor.Red }; 
-      valuesToProcess = new ConcurrentQueue<SyslogIpModel>();
-      HandlerThread = new Thread(Process);
-      HandlerThread.Start();
+      _valuesToProcess = new ConcurrentQueue<SyslogIpModel>();
+      _handlerThread = new Thread(Process);
+      _handlerThread.Start();
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ namespace SysLog.Handlers
         Stop() ;
         return ;
       }
-      listeningView = c;
+      _listeningView = c;
       Start();
     }
 
@@ -51,11 +51,11 @@ namespace SysLog.Handlers
     /// </summary>
     public void Start()
     {
-      if (!IsRunning)
+      if (!_isRunning)
       {
-        valuesToProcess = new ConcurrentQueue<SyslogIpModel>();
-        IsRunning = true;
-        HandlerThread = new Thread(Process);
+        _valuesToProcess = new ConcurrentQueue<SyslogIpModel>();
+        _isRunning = true;
+        _handlerThread = new Thread(Process);
       }
 
     }
@@ -65,12 +65,12 @@ namespace SysLog.Handlers
     /// </summary>
     public void Stop()
     {
-      if (IsRunning)
+      if (_isRunning)
       {
-        IsRunning = false;
-        HandlerThread.Join();
-        HandlerThread = null;
-        valuesToProcess = null;
+        _isRunning = false;
+        _handlerThread.Join();
+        _handlerThread = null;
+        _valuesToProcess = null;
       }
     }
 
@@ -80,11 +80,11 @@ namespace SysLog.Handlers
     /// <param name="s">raw string and src IP data from the message</param>
     public void Enqueue(SyslogIpModel s)
     {
-      if (!IsRunning)
+      if (!_isRunning)
       {
         return;
       }
-        valuesToProcess.Enqueue(s);
+        _valuesToProcess.Enqueue(s);
     }
 
     /// <summary>
@@ -93,16 +93,16 @@ namespace SysLog.Handlers
     public void Process()
     {
 
-      while (IsRunning) 
+      while (_isRunning) 
       {
         try
         {
-          if (valuesToProcess.TryDequeue(out SyslogIpModel v))
+          if (_valuesToProcess.TryDequeue(out SyslogIpModel v))
           {
-            DelimitedMessageModel m = new DelimitedMessageModel(v.msg, v.ip);
-            if (listeningView != null)
+            DelimitedMessageModel m = new DelimitedMessageModel(v.Msg, v.Ip,v.IsTcp);
+            if (_listeningView != null)
             {
-              listeningView(m);
+              _listeningView(m);
             }
 
           }
@@ -122,11 +122,11 @@ namespace SysLog.Handlers
     /// <returns>New instance of Hanlder in one doesent exists, otherwise returns the instance currently active.</returns>
     public static Handler Create()
     {
-      if (instance == null)
+      if (s_instance == null)
       {
-        instance = new Handler();
+        s_instance = new Handler();
       }
-      return instance;
+      return s_instance;
     }
 
 

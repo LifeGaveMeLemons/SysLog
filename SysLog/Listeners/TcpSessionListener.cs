@@ -10,23 +10,27 @@ namespace SysLog.Listeners
   /// </summary>
   internal class TcpSessionListener : Listener
   {
-    private static string description = "Tcp Handler";
-
-    private Action<SyslogIpModel> callback;
-    private Action<TcpSessionListener> rm;
-    IPEndPoint remoteEndPoint;
-    NetworkStream stream;
-    TcpClient client;
+    private static string s_description = "Tcp Handler";
+    private List<string> _allMessages = new List<string>();
+    private Action<SyslogIpModel> _callback;
+    private Action<TcpSessionListener> _rm;
+		private IPEndPoint _remoteEndPoint;
+		private NetworkStream _stream;
+		private TcpClient _client;
 
     /// <summary>
     ///   Release unamanaged resources.
     /// </summary>
     public override void Dispose()
     {
-      stream.Close();
-      stream.Dispose();
-      client.Close();
-      client.Dispose();
+      string temp = _client.Client.RemoteEndPoint.ToString();
+
+			string fileName = $"{temp.Substring(0,temp.IndexOf(':'))}_{DateTime.Now.ToString("yyyyMMddHHmmssff")}";
+      File.WriteAllLines($"D:/{fileName}.txt", _allMessages);
+      _stream.Close();
+      _stream.Dispose();
+      _client.Close();
+      _client.Dispose();
       GC.SuppressFinalize(this);
     }
     /// <summary>
@@ -35,7 +39,7 @@ namespace SysLog.Listeners
     /// <returns> True if the connection has been termiated and false if it has not been</returns>
     private bool CheckForConnection()
     {
-      return (client.Client.Poll(1000, SelectMode.SelectRead) && client.Client.Available == 0);
+      return (_client.Client.Poll(1000, SelectMode.SelectRead) && _client.Client.Available == 0);
     }
     /// <summary>
     ///   Gets the description of the specific listener type.
@@ -43,7 +47,7 @@ namespace SysLog.Listeners
     /// <returns> a very short description of the type of listener.</returns>
     override public string GetDescription()
     {
-      return description;
+      return s_description;
     }
     /// <summary>
     ///   Checks the client for new inbound messages.
@@ -52,10 +56,10 @@ namespace SysLog.Listeners
     {
 
       string s ="";
-      if (stream.DataAvailable)
+      if (_stream.DataAvailable)
       {
         byte[]? data = new byte[400];
-        stream.Read(data, 0, data.Length);
+        _stream.Read(data, 0, data.Length);
         s = Encoding.UTF8.GetString(data);
       }
       else
@@ -63,13 +67,14 @@ namespace SysLog.Listeners
         bool v = CheckForConnection();
         if (v)
         {
-          rm(this);
+          _rm(this);
           return;
         }
       }
       if (s != "")
       {
-        callback(new SyslogIpModel(remoteEndPoint,s,0));
+        _allMessages.Add(s);
+        _callback(new SyslogIpModel(_remoteEndPoint,s,true));
       }
       else
       {
@@ -85,16 +90,18 @@ namespace SysLog.Listeners
     /// <param name="rm">invokes this callback whenever the session is terminated</param>
     public TcpSessionListener(TcpClient client, Action<SyslogIpModel> callback, Action<TcpSessionListener> rm)
     {
-      this.client = client;
-      this.callback = callback;
-      stream = client.GetStream();
-      this.rm = rm;
-      remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
-      if (remoteEndPoint == null) 
+      this._client = client;
+      this._callback = callback;
+      _stream = client.GetStream();
+      this._rm = rm;
+      _remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
+      if (_remoteEndPoint == null) 
       {
         rm(this);
       }
-    }
+      _allMessages = new List<string>();
+
+		}
   }
 }
 

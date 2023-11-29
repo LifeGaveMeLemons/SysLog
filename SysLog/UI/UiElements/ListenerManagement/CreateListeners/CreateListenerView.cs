@@ -1,24 +1,19 @@
 ﻿using SysLog.ListenerCol;
 using SysLog.Listeners;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SysLog.UI.UiElements
 {
   internal class CreateListenerView : NavClass
   {
-    private static CreateListenerView instance;
+    private static CreateListenerView s_instance;
     public static CreateListenerView Create()
     {
-      if (instance == null)
+      if (s_instance == null)
       {
-        instance = new CreateListenerView();
+        s_instance = new CreateListenerView();
       }
-      return instance;
+      return s_instance;
     }
     private void CreateUDPListener()
     {
@@ -85,7 +80,7 @@ namespace SysLog.UI.UiElements
     }
     public CreateListenerView()
     {
-      subElements = new List<StringFunctionModel>()
+      _subElements = new List<StringFunctionModel>()
             {
               new StringFunctionModel("Create a UDP Listener",this.CreateUDPListener),
               new StringFunctionModel("Create a TCP listener", this.CreateTCPListener),

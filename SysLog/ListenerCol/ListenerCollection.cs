@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using SysLog.Listeners;
 using SysLog.UI.Data;
 
@@ -17,7 +13,7 @@ namespace SysLog.ListenerCol
     /// <summary>
     /// Singleton class, static field to store current instance.
     /// </summary>
-    private static ListenerCollection instance;
+    private static ListenerCollection s_instance;
 
     /// <summary>
     /// Static create Method returns an active ListenerCollection object. If no such objects exist, creates a new one.
@@ -26,46 +22,58 @@ namespace SysLog.ListenerCol
     /// <returns></returns>
     public static ListenerCollection Create(Action<SyslogIpModel>? callback)
     {
-      if (instance == null) 
+      if (s_instance == null) 
       {
-        instance= new ListenerCollection(callback);
+        s_instance= new ListenerCollection(callback);
       }
-      return instance;
+      return s_instance;
     }
 
 
-    List<UdpListener> UDPlisteners = new List<UdpListener>();
-    object UdpListKey = new object();
+    private List<UdpListener> _udpListeners = new List<UdpListener>();
+    private object _udpListKey = new object();
 
-    List<Listener> Clients;
-    Thread ConnectionHandlerThread;
+    private List<Listener> _clients;
+    private Thread _connectionHandlerThread;
 
-    Thread newConnections;
+    private Thread _newConnections;
 
 
-    List<InboundConnectionListener> listenerList;
+    private List<InboundConnectionListener> _listenerList;
     private object keyConInitializer = new object();
-    bool isListeningTCP = true;
+    private bool _isListeningTCP = true;
 
-    private Action<SyslogIpModel>? dataRecievedCallback;
+    private Action<SyslogIpModel>? _dataRecievedCallback;
 
     //will not update current connecctions
-    public Action<SyslogIpModel> OnRecieve { set { dataRecievedCallback = value == null ? (SyslogIpModel val) => { } : value; } }
+    public Action<SyslogIpModel> OnRecieve { set { _dataRecievedCallback = value == null ? (SyslogIpModel val) => { } : value; } }
 
     
-    private object key = new object();
+    private object _key = new object();
 
 
     /// <summary>
     ///   Returns a new list wil all the UdpListeners currently active.
     /// </summary>
     /// <returns>A List of all active UdpListeners</returns>
+    
+    public void ChangeIp(IPAddress address)
+    {
+      foreach(InboundConnectionListener listener in _listenerList)
+      {
+        listener.ChangeIp(address);
+      }
+      foreach(UdpListener listener in _udpListeners)
+      {
+        listener?.ChangeIp(address);
+      }
+    }
     public List<UdpListener> GetUdpList()
     {
       List<UdpListener> li = new List<UdpListener>();
-      lock(UdpListKey)
+      lock(_udpListKey)
       {
-        foreach(UdpListener c in UDPlisteners)
+        foreach(UdpListener c in _udpListeners)
         {
           li.Add(c);
         }
@@ -81,7 +89,7 @@ namespace SysLog.ListenerCol
       List<InboundConnectionListener> li = new List<InboundConnectionListener>();
       lock (keyConInitializer)
       {
-        foreach (InboundConnectionListener c in listenerList)
+        foreach (InboundConnectionListener c in _listenerList)
         {
           li.Add(c);
         }
@@ -94,12 +102,12 @@ namespace SysLog.ListenerCol
     /// </summary>
     private void CheckForInboundConnections()
     {
-      while (isListeningTCP)
+      while (_isListeningTCP)
       {
         InboundConnectionListener[] listeners;
         lock (keyConInitializer)
         {
-          listeners = listenerList.ToArray();
+          listeners = _listenerList.ToArray();
         }
         TcpClient tcpClient = null;
         foreach (var listener in listeners)
@@ -107,9 +115,9 @@ namespace SysLog.ListenerCol
           tcpClient = listener.CheckForConnections();
           if (tcpClient != null)
           {
-            lock (key)
+            lock (_key)
             {
-              Clients.Add(new Listeners.TcpSessionListener(tcpClient, dataRecievedCallback, RemoveClient));
+              _clients.Add(new Listeners.TcpSessionListener(tcpClient, _dataRecievedCallback, RemoveClient));
             }
           }
 
@@ -123,10 +131,10 @@ namespace SysLog.ListenerCol
     /// <param name="l">TcpSessionlistener to be removed.</param>
     public void RemoveClient(TcpSessionListener l)
     {
-      lock(key) 
+      lock(_key) 
       {
         l.Dispose();
-        Clients.Remove(l);
+        _clients.Remove(l);
       }
     }
     /// <summary>
@@ -135,11 +143,11 @@ namespace SysLog.ListenerCol
     /// <param name="l">UdpListener to be removed.</param>
     public void RemoveClient(UdpListener l)
     {
-      lock (key)
+      lock (_key)
       { 
         l.Dispose();
-        Clients.Remove(l);
-        UDPlisteners.Remove(l);
+        _clients.Remove(l);
+        _udpListeners.Remove(l);
       }
     }
 
@@ -151,7 +159,7 @@ namespace SysLog.ListenerCol
     {
       lock(keyConInitializer)
       {
-        listenerList.Remove(l);
+        _listenerList.Remove(l);
       }
     }
 
@@ -163,7 +171,7 @@ namespace SysLog.ListenerCol
     {
       lock(keyConInitializer)
       {
-        listenerList.Add(new InboundConnectionListener(port));
+        _listenerList.Add(new InboundConnectionListener(port));
       }
     }
 
@@ -177,17 +185,17 @@ namespace SysLog.ListenerCol
         try
         {
           Listener[] l;
-          if (Clients.Count == 0) continue;
-          lock (key)
+          if (_clients.Count == 0) continue;
+          lock (_key)
           {
-            l = Clients.ToArray();
+            l = _clients.ToArray();
           }
           foreach (Listener element in l)
           {
             element.CheckForMessages();
           }
         }
-        catch (Exception e) { Console.WriteLine(  e); }
+        catch (Exception e) { }
                 
 
       }
@@ -201,10 +209,10 @@ namespace SysLog.ListenerCol
     /// <param name="listener">Listener to be added.</param>
     public void Add(UdpListener listener)
     {
-      lock (key)
+      lock (_key)
       {
-        Clients.Add(listener);
-        UDPlisteners.Add(listener); 
+        _clients.Add(listener);
+        _udpListeners.Add(listener); 
       }
     }
 
@@ -214,19 +222,19 @@ namespace SysLog.ListenerCol
     /// <param name="callback"> Callback to be added</param>
     private ListenerCollection(Action<SyslogIpModel>? callback)
     {
-      Clients = new List<Listener>();
-      listenerList = new List<InboundConnectionListener>();
+      _clients = new List<Listener>();
+      _listenerList = new List<InboundConnectionListener>();
 
 
-      ConnectionHandlerThread = new Thread(CheckForMessages);
-      ConnectionHandlerThread.Start();
+      _connectionHandlerThread = new Thread(CheckForMessages);
+      _connectionHandlerThread.Start();
 
 
-      newConnections = new Thread(CheckForInboundConnections);
-      newConnections.Start();
+      _newConnections = new Thread(CheckForInboundConnections);
+      _newConnections.Start();
 
 
-      this.dataRecievedCallback = callback;
+      this._dataRecievedCallback = callback;
     }
 
   }

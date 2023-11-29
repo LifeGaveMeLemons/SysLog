@@ -25,6 +25,7 @@ namespace SysLog.UI.Data.DelimitedMessageModel
     public string Message;
     public byte SeverityCalc;
     public string Original;
+    public bool IsTcp;
 
     /// <summary>
     ///  Define behaviour when casting to string.
@@ -45,7 +46,7 @@ namespace SysLog.UI.Data.DelimitedMessageModel
     /// <param name="ip">
     ///   ip endpoint of where the message origin
     /// </param>
-    public DelimitedMessageModel(string sourceMessage,IPEndPoint ip)
+    public DelimitedMessageModel(string sourceMessage,IPEndPoint ip,bool isTcp)
     {
       Match m = Regex.Match(sourceMessage, MESSAGE_REGEX);
       string sev = m.Groups["severity"].Value;
@@ -56,6 +57,7 @@ namespace SysLog.UI.Data.DelimitedMessageModel
       Src = ip;
       Original = sourceMessage;
       SeverityCalc = Convert.ToByte(Severity % 8);
+      this.IsTcp = isTcp;
     }
   }
 }

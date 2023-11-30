@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.CodeAnalysis.Scripting;
 using SysLog.UI.Data.DelimitedMessageModel;
+using SysLog.UI.UiElements.SettingsView;
 
 namespace SysLog.UI.UiElements
 {
@@ -199,7 +200,7 @@ namespace SysLog.UI.UiElements
     {
       _isRunning = false;
 			string fileName = $"Listening_Session_{DateTime.Now.ToString("yyyyMMddHHmmssff")}";
-			File.WriteAllLines($"D:/{fileName}.txt", _values.Select((v) => (string) v));
+			File.WriteAllLines($"{SettingsView.SettingsView.BaseDir}{fileName}.txt", _values.Select((v) => (string) v));
 		}
     /// <summary>
     /// Private constructor to enforce singleton reliability.

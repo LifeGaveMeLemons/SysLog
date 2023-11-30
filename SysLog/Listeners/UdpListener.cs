@@ -27,7 +27,7 @@ namespace SysLog.Listeners
 			string temp = _client.Client.LocalEndPoint.ToString();
 
 			string fileName = $"{temp.Substring(0, temp.IndexOf(':'))}_{DateTime.Now.ToString("yyyyMMddHHmmssff")}";
-			File.WriteAllLines($"{SettingsView.BaseDir}/{fileName}.txt", _messages);
+			File.WriteAllLines($"{SettingsView.BaseDir}{fileName}.txt", _messages);
 			_messages = null;
       _dataCallback = null;
       if (_client != null)

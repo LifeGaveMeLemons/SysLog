@@ -27,7 +27,7 @@ namespace SysLog.Listeners
       string temp = _client.Client.RemoteEndPoint.ToString();
 
 			string fileName = $"{temp.Substring(0,temp.IndexOf(':'))}_{DateTime.Now.ToString("yyyyMMddHHmmssff")}";
-      File.WriteAllLines($"{SettingsView.BaseDir}/{fileName}.txt", _allMessages);
+      File.WriteAllLines($"{SettingsView.BaseDir}{fileName}.txt", _allMessages);
       _allMessages = null;
       _stream.Close();
       _stream.Dispose();

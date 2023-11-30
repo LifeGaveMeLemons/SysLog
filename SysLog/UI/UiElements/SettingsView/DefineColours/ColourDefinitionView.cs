@@ -5,7 +5,7 @@
 		private int _maxValue;
 		private int _currentValue = 0;
 		private static ColourDefinitionView s_instance;
-
+		private static ConsoleColor[] _colors;
 		/// <summary>
 		/// Creates an instance of ColourDefinitionView class using the Singleton pattern.
 		/// </summary>
@@ -102,7 +102,7 @@
 					int number = Convert.ToInt32(input);
 					if (number > 0 && number < numberOfElements)
 					{
-						Handlers.Handler.colors[_currentValue] = Enum.GetValues(typeof(ConsoleColor)).Cast<ConsoleColor>().ToArray()[number - 1];
+						Handlers.Handler.colors[_currentValue] = _colors[number - 1];
 					}
 					else
 					{
@@ -130,6 +130,7 @@
 		// Private constructor to enforce Singleton pattern
 		private ColourDefinitionView()
 		{
+			_colors = Enum.GetValues(typeof(ConsoleColor)).Cast<ConsoleColor>().ToArray();
 		}
 	}
 }

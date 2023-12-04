@@ -62,7 +62,7 @@ namespace SysLog.Listeners
         lock (this)
         {
           if (_client.Available > 0)
-          {
+          { 
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, Port);
             byte[]? bytes = _client.Receive(ref ip);
             string resultData = Encoding.UTF8.GetString(bytes);

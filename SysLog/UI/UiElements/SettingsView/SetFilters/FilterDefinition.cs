@@ -57,7 +57,7 @@ namespace SysLog.UI.UiElements.SetFilters
 					}
 
 					// Automatically encapsulate IP address patterns with IPAddress.Parse()
-					string modifiedInput = Regex.Replace(userInput, @"\b\d{1,3}(\.\d{1,3}){3}\b", m => $"IPAddress.Parse(\"{m.Value}\")");
+					string modifiedInput = Regex.Replace(userInput, @"\b\d{1,3}(\.\d{1,3}){3}\b", m => $"\"{m.Value}\"");
 
 					string codeToCompile = $"return {modifiedInput};";
 

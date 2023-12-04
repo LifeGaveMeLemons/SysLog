@@ -18,7 +18,8 @@ namespace SysLog.UI.Data.DelimitedMessageModel
   {
     private const string DATE_TIME_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffK";
     private const string MESSAGE_REGEX = @"^(?:<(?<severity>\d+)>)?(?:<>)?(?<version>\d+) (?<dateTime>.{24}) (?<program>.*?)( - - - - |$)(?<message>.*)";
-    public IPEndPoint Src;
+    public string Sender;
+    public ushort Port;
     public byte Severity;
     public byte Version;
     public DateTime Timestamp;
@@ -54,7 +55,8 @@ namespace SysLog.UI.Data.DelimitedMessageModel
       Version = Convert.ToByte(m.Groups["version"].Value);
       DateTime.TryParseExact(m.Groups["DateTime"].Value, DATE_TIME_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out Timestamp);
       Message = m.Groups["message"].Value;
-      Src = ip;
+      Sender = ip.Address.ToString();
+      Port = (ushort) ip.Port;
       Original = sourceMessage;
       SeverityCalc = Convert.ToByte(Severity % 8);
       this.IsTcp = isTcp;
